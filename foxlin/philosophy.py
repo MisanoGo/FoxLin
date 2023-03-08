@@ -16,14 +16,18 @@ class BaseModel(BaseModel):
         arbitrary_types_allowed = True
 
 class Schema(BaseModel):
+    """
+    databaser schema aliaser & also record carrier
+    """
     ID: ID
 
 class DBCarrier(BaseModel):
-    db: DB_TYPE
+    db: DB_TYPE = None
 
 class Log(BaseModel):
     box_level: str
     log_level: str
+    message: object = None
 
 class DBOperation(BaseModel):
     """

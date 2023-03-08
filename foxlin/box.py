@@ -1,11 +1,31 @@
 from pathlib import Path
-from typing import Callable
+from typing import (
+    Callable,
+    List,
+    Dict
+)
 
 import orjson
 
-from philosophy import *
+from philosophy import (
+    DBOperation,
+
+    DBCreate,
+    DBRead,
+    DBUpdate,
+    DBDelete,
+ 
+    Schema,
+    DBCarrier,
+
+    Log,
+
+    LEVEL,
+    DB_TYPE
+)
+
 from tog import TupleGraph, tg_typer
-from utils import getStructher
+from utils import getStructher, getKeyList
 
 
 class FoxBox:
@@ -15,58 +35,51 @@ class FoxBox:
 
     dbom: database operation manager
     """
-    parent= None
     level: str = 'set level of operation'
 
-    def __init__(self, parent = None):
-        self.parent = parent
+    def operate(self, obj: DBOperation):
+        operator: Callable = getattr(self, obj.op_name.lower()+'_op')
+        operator(obj)
 
-    def operate(self,obj: DBOperation):
-        if isinstance(obj, DBOperation):
-            if self.level in obj.levels:
-                operator: Callable = self.__getattribute__(obj.op_name.lower()+'_op')
-                result =  operator(obj)
-
-                if obj.callback_level == self.level:
-                    obj.callback(result) if obj.callback else result
-
-            if self.parent: # check for parent dbom exists
-                self.parent.operate(obj) # send operation to parent class
-
+        if obj.callback is not None :
+            if self.level == obj.callback_level:
+                obj.callback(obj)
 
 class MemBox(FoxBox):
     level: str = 'memory'
 
     def create_op(self, obj: DBCreate):
         raw_data = obj.record.dict()
-        for c in obj.db.keys():
-            obj.db[c][obj.record.ID] = raw_data[c]
+        ID = obj.record.ID
+        list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.db.keys()))
 
     def read_op(self, obj: DBRead):
         pass
 
     def update_op(self, obj: DBUpdate):
-        pass
+        raw_data = obj.record.dict()
+        ID = obj.record.ID
+        list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.updated_fields))
 
     def delete_op(self, obj: DBUpdate):
-        pass
+        raw_data = obj.record.dict()
+        ID = obj.record.ID
+        list(map(lambda c:obj.db[c].pop(ID),obj.db.keys()))
 
 
-
-class CreateJsonDB(DBOperation):
-    op_name: str = "create_database"
-    base_schema: Schema = None
+class JsonDBOP(DBOperation):
     path: str
-    levels: List[LEVEL] = ['jsonfile']
+    levels: List[LEVEL] = ['jsonfile','log']
+    structure: Schema = None
 
-class DBLoad(DBOperation):
+class CreateJsonDB(JsonDBOP):
+    op_name: str = "create_database"
+
+class DBLoad(DBCarrier,JsonDBOP):
     op_name = 'LOAD'
-    path: str = ''
 
-class DBDump(DBCarrier,DBOperation):
+class DBDump(DBCarrier,JsonDBOP):
     op_name = 'DUMP'
-    path: str = ''
-    levels: List[LEVEL] = ['log','jsonfile']
 
 class JsonBox(FoxBox):
     """
@@ -75,32 +88,50 @@ class JsonBox(FoxBox):
     file_type = '.json'
     level: str = 'jsonfile'
 
-    def _translate(self,data: DB_TYPE):
+
+    def _validate(self, db, schema) -> bool:
+        scl: List[str] = getKeyList(schema) # get user definate Schema column list
+        dcl: List[str] = db.keys() # get raw database column
+        return scl == dcl # validate database columns with schema columns
+
+    def _translate(self, data: DB_TYPE):
         data_n = {c:TupleGraph(**r) for c,r in data.items()}
         return data_n
 
-    def _load(self, path: str):
+    def _load(self, path: str, schema: Schema):
         with open(path,'r') as file:
-            return self._translate(orjson.loads(file.read())['db'])
+            db = self._translate(orjson.loads(file.read())['db'])
+            if self._validate(db, schema):
+                return db
+        raise ValueError
 
     def _dump(self,path: str, data: Dict, mode='wb+'):
         with open(path, mode) as dbfile:
-            dbfile.write(orjson.dumps(data,default=tg_typer))
+            dbfile.write(orjson.dumps(data, default=tg_typer))
 
-    def load_op(self, obj: DBLoad) -> Any:
-        data = self._load(obj.path)
-        return DBCarrier(db=data)
+    def load_op(self, obj: DBLoad) -> DBCarrier:
+        data = self._load(obj.path, obj.structure)
+        obj.db = data
+        return obj 
 
     def dump_op(self, obj: DBDump):
-        self._dump(obj.path,{'db':obj.dict()['db']})
+        self._dump(obj.path,{'db':obj.db})
 
-    def create_database_op(self,obj: CreateJsonDB):
-        self._dump(obj.path,{'db':getStructher(obj.base_schema)},mode='xb+') # mode set for check database dosent exists
+    def create_database_op(self,obj : CreateJsonDB):
+        self._dump(obj.path, {'db':getStructher(obj.structure)}, mode='xb+') # mode set for check database dosent exists
 
 class LogBox(FoxBox):
     level: str = 'log'
 
     def operate(self, obj: DBOperation):
         for i in obj.logs:
-            print(i.level,i.message)
+            print(i.log_level,i.box_level,i.message)
 
+
+class BoxManager(FoxBox):
+    def __init__(self,*box):
+        self.boxbox = {bx.level:bx() for bx in box}
+
+    def operate(self, obj):
+        for l in obj.levels:
+            self.boxbox[l].operate(obj)

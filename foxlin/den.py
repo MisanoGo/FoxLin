@@ -8,7 +8,6 @@ class Den(object):
     """
     Den is session model for FoxLin DB manager
     here Den records operations on database and over then commited, commit list will send to Foxlin for real operate
-    and session will be delete.
     """
     def __init__(self,
                  db: DBCarrier,
@@ -56,6 +55,7 @@ class Den(object):
 
     def commit(self):
         self._commiter(self._commit_list)
+        self._commit_list = []
 
 
 class DenManager(object):
@@ -73,11 +73,6 @@ class DenManager(object):
     def session(self):
         s = self.sessionFactory
         yield s
-        print(s._commit_list)
         s.commit()
         del s
-
-
-
-
 
