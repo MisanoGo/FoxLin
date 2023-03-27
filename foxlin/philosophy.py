@@ -3,11 +3,14 @@ from typing import List, Dict, Union
 
 from pydantic import BaseModel
 
-VALID_TYPES = Union[str,int]
-DB_TYPE = Dict[str ,VALID_TYPES]
+ID = int
+COLUMN = str
+VALID_DATA_TYPES = Union[str,int]
+RECORDS = Dict[ID, Union[VALID_DATA_TYPES, List[VALID_DATA_TYPES]]]
+DB_TYPE = Dict[COLUMN,RECORDS]
 
 class Schema(BaseModel):
-    ID: int
+    ID: ID
 
 class DBCarrier(BaseModel):
     db: DB_TYPE
