@@ -1,21 +1,32 @@
+from abc import ABC, abstractstaticmethod
+
 from pydantic import BaseModel
 
 class Schema(BaseModel):
     ID: int
 
 
-class DatabaseOperation(BaseModel):
+class DBOperation(BaseModel):
     op_name: str
-    structure: Schema
+    record : Schema
 
-class DBCreate(DatabaseOperation):
+class DBCreate(DBOperation):
     pass
 
-class DBRead(DatabaseOperation):
+class DBRead(DBOperation):
     pass
 
-class DBUpdate(DatabaseOperation):
+class DBUpdate(DBOperation):
     pass
 
-class DBDelete(DatabaseOperation):
+class DBDelete(DBOperation):
     pass
+
+class FileSystem(ABC):
+    @abstractstaticmethod
+    def load(self):
+        pass
+
+    @abstractstaticmethod
+    def operate(self, obj: DBOperation):
+        pass

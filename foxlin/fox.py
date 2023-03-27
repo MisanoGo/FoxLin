@@ -1,7 +1,7 @@
 from typing import List,Dict, Tuple ,Any ,Union
 from pydantic import BaseModel
-from mirfire.philosophy import *
-
+from philosophy import *
+from box import FoxBox
 
 class FoxLin(object):
     auto_commit: bool = True
@@ -9,38 +9,27 @@ class FoxLin(object):
 
     def __init__(self, path: str,
                  schema: Schema,
-                 auto_commit: bool=True
+                 auto_commit: bool=True,
+                 file_system: FileSystem = FoxBox
             ):
         self.path = path
         self.auto_commit = auto_commit  
         self.schema: Schema = schema
+        self.file_system = file_system(self.path)
 
         self.__db: Dict[str,Dict[int,Any]] = {}
 
         self.load()
 
     def load(self):
-        self.__db = self._load_from_csvp()
- 
-    def _load_from_csvp(self):
-        rdb: str = open(self.path,'r').read()
-        rw : List[str] = rdb.splitlines()
-        cl: List[str] = rw[0].split(';') # column list
-        dl: List[str] = rw[1:] # data List
+        self.__db = self.file_system.load()
 
-        db = {c:{} for c in cl} #load columns into db
-        for d in dl:
-            rd = d.split(';')
-            ID = int(rd[0]) # specifed Id of row data
-            for c,i in zip(cl,rd):
-                db[c][ID] = i
-        return db
-
-    def _export_to_csvp(self):
-        pass
-
-    def commit(self,operation:Union[DatabaseOperation,List[DatabaseOperation]] = _commit_list):
-        pass
+    def commit(self,operation:Union[DBOperation,List[DBOperation]] = _commit_list):
+        if type(operation) is list:
+            for o in operation:
+                self.file_system.operate(o)
+        else:
+            self.file_system.operate(o)
 
     def _auto_commit(self,f,*args,**kwargs):
         com = f(*args,**kwargs)
@@ -67,6 +56,7 @@ class FoxLin(object):
     
     def _delete_record(self):
         pass
+
     def delete(self):
         for c in self.columns:
             pass
