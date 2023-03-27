@@ -48,7 +48,7 @@ class FoxLin(object):
         return op
 
     def select(self,ID: int) -> Schema:
-        record = {c:self.__db[c][ID] for c in self.__db.keys()}
+        record = {c:self.__db[c][ID] for c in self.columns}
         return self.schema(**record)
 
     def query(self):
@@ -64,19 +64,23 @@ class FoxLin(object):
             self._insert_record(s.ID,c,row_data[c])
         return DBCreate(record=s)
 
-    def _update_record(self):
-        pass
+    def _update_record(self,ID: int, column: str, data: Any):
+        self.__db[column][ID] = data
 
     @_auto_commit
-    def update(self) -> DBUpdate:
-        # TODO : implement
+    def update(self,s: Schema, updated_fields:List[str]) -> DBUpdate:
+        for c in updated_fields:
+            self._update_record(s.ID,c,s.dict()[c])
+        return DBUpdate(record=s)
 
-    def _delete_record(self):
-        pass
+    def _delete_record(self, ID: int, column: str):
+        self.__db[column].pop(ID)
 
     @_auto_commit
-    def delete(self) -> DBDelete:
-        # TODO : implement
+    def delete(self, s: Schema) -> DBDelete:
+        for c in self.columns:
+            self._delete_record(s.ID,c)
+        return DBDelete(record=s)
 
     @property
     def columns(self) -> List[str]:
