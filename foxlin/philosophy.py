@@ -21,9 +21,10 @@ class DBCarrier(BaseModel):
 
 class DBOperation(BaseModel):
     op_name: str
+    callback: OperatorCarrier = None
 
 class CRUDOperation(DBOperation):
-    record : Schema
+    record : Schema = Schema
 
 class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'
@@ -42,7 +43,7 @@ class FoxBox(ABC):
         raise NotImplementedError
 
     @abstractstaticmethod
-    def load(self) -> DBCarrier:
+    def load_op(self) -> DBCarrier:
         raise NotImplementedError
 
     def operate(self,obj: DBOperation):
