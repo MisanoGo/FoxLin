@@ -1,8 +1,10 @@
 from typing import List,Dict, Tuple ,Any ,Union
 import functools
+
 from pydantic import BaseModel
+
 from philosophy import *
-from box import FoxBox
+from box import JsonBox
 
 
 class FoxLin(object):
@@ -13,7 +15,7 @@ class FoxLin(object):
                  path: str = None,
                  schema: Schema = Schema,
                  auto_commit: bool = True,
-                 file_system: FileSystem = FoxBox
+                 file_system: FoxBox = JsonBox
             ):
         self.path = path
         self.auto_commit = auto_commit
@@ -21,9 +23,9 @@ class FoxLin(object):
         self.schema: Schema = schema
         self.file_system = file_system(self.path)
 
-        self.__db: Dict[str,Dict[int,Any]] = {}
+        self.__db: DB_TYPE = {}
 
-        #self.load()
+        self.load()
 
     def load(self):
         self.__db = self.file_system.load().db
