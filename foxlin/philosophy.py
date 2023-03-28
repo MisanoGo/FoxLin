@@ -17,21 +17,23 @@ class DBCarrier(BaseModel):
 
 class DBOperation(BaseModel):
     op_name: str
+
+class CRUDOperation(DBOperation):
     record : Schema
 
-class DBCreate(DBOperation):
+class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'
 
-class DBRead(DBOperation):
+class DBRead(CRUDOperation):
     op_name: str = "READ"
 
-class DBUpdate(DBOperation):
+class DBUpdate(CRUDOperation):
     op_name: str = "UPDATE"
 
-class DBDelete(DBOperation):
+class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
 
-class FileSystem(ABC):
+class FoxBox(ABC):
     def __init__(self, path: str):
         raise NotImplementedError
 
