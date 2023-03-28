@@ -32,8 +32,12 @@ class FoxLin(object):
         if self._validate(db):
             self.__db = db
 
-    def _validate(self, *args, **kwargs) -> bool: # TODO
-            return True
+    def _validate(self, db) -> bool:
+            scl: List[str] = self.schema.construct().schema()['properties'].keys()
+            dcl: List[str] = db.keys()
+
+            if scl == dcl:
+                return True
 
     def commit(self,operation:Union[CRUDOperation,List[CRUDOperation]] = _commit_list):
         if type(operation) is list:

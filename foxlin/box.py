@@ -3,12 +3,12 @@ from typing import Callable
 
 import orjson
 
-from philosophy import FoxBox, DBCarrier, DBOperation, DB_TYPE
+from philosophy import *
 
 
 class CreateJsonDB(DBOperation):
     path: str
-    op_name: str = "createDatabase"
+    op_name: str = "create_database"
     base_schema: DBCarrier = DBCarrier(db={"ID":{0:0}})
 
 class JsonBox(FoxBox):
@@ -29,10 +29,18 @@ class JsonBox(FoxBox):
     def load(self) -> DBCarrier:
         return DBCarrier(db=self.data)
 
-    def operate(self,obj: DBOperation):
-        operator: Callable = self.__getattribute__(obj.op_name)
-        return operator(obj)
-
-    def createDatabase(self,obj: CreateJsonDB):
+    def create_database_op(self,obj: CreateJsonDB):
         with open(obj.path,'w+',encoding='utf-8') as dbfile:
             dbfile.write(obj.base_schema.json())
+
+    def read_op(self, obj: DBRead):
+        pass
+
+    def create_op(self, obj: DBCreate):
+        pass
+
+    def update_op(self, obj: DBUpdate):
+        pass
+
+    def delete_op(self, obj: DBDelete):
+        pass
