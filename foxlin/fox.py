@@ -28,9 +28,14 @@ class FoxLin(object):
         self.load()
 
     def load(self):
-        self.__db = self.file_system.load().db
+        db = self.file_system.load().db
+        if self._validate(db):
+            self.__db = db
 
-    def commit(self,operation:Union[DBOperation,List[DBOperation]] = _commit_list):
+    def _validate(self, *args, **kwargs) -> bool: # TODO
+            return True
+
+    def commit(self,operation:Union[CRUDOperation,List[CRUDOperation]] = _commit_list):
         if type(operation) is list:
             for o in operation:
                 self.file_system.operate(o)
