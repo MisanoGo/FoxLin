@@ -4,12 +4,12 @@ import functools
 from pydantic import BaseModel
 
 from philosophy import *
-from box import JsonBox
+from box import JsonBox,DBLoad
 
 
 class FoxLin(object):
     auto_commit: bool = True
-    _commit_list: List = []
+    _commit_list: List[CRUDOperation] = []
 
     def __init__(self,
                  path: str = None,
@@ -25,27 +25,21 @@ class FoxLin(object):
 
         self.__db: DB_TYPE = {}
 
-        self.load()
+        self.commit(DBLoad(callback=OperatorCarrier(func=self._validate)))
 
-    def load(self):
-        db = self.file_system.load().db
-        if self._validate(db):
-            self.__db = db
+    def _load(self, dbc: DBCarrier):
+        self.__db = dbc.db
 
-    def _validate(self, db) -> bool:
-            scl: List[str] = self.schema.construct().schema()['properties'].keys()
-            dcl: List[str] = db.keys()
+    def _validate(self, dbc: DBCarrier) -> bool:
+        scl: List[str] = self.schema.construct().schema()['properties'].keys() # get user definate Schema column list
+        dcl: List[str] = dbc.db.keys() # get raw database column
 
-            if scl == dcl:
-                return True
+        if scl == dcl:
+            self._load(dbc)
 
-    def commit(self,operation:Union[CRUDOperation,List[CRUDOperation]] = _commit_list):
-        if type(operation) is list:
-            for o in operation:
-                self.file_system.operate(o)
-            self._commit_list.clear()
-        else:
-            self.file_system.operate(operation)
+    def commit(self,*operation: Tuple[CRUDOperation]):
+        for o in operation:
+            self.file_system.operate(o)
 
     @staticmethod
     def _auto_commit(f):
