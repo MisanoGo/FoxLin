@@ -1,5 +1,5 @@
 from abc import ABC, abstractstaticmethod
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Callable, Any
 
 from pydantic import BaseModel
 
@@ -11,6 +11,10 @@ DB_TYPE = Dict[COLUMN,RECORDS]
 
 class Schema(BaseModel):
     ID: ID
+
+class OperatorCarrier(BaseModel):
+    func: Callable
+    args: Any
 
 class DBCarrier(BaseModel):
     db: DB_TYPE
@@ -41,8 +45,22 @@ class FoxBox(ABC):
     def load(self) -> DBCarrier:
         raise NotImplementedError
 
+    def operate(self,obj: DBOperation):
+        operator: Callable = self.__getattribute__(obj.op_name.lower()+'_op')
+        return operator(obj)
+
     @abstractstaticmethod
-    def operate(self, obj: DBOperation):
-        raise NotImplementedError
+    def read_op(self, obj: DBRead):
+        pass
 
+    @abstractstaticmethod
+    def create_op(self, obj: DBCreate):
+        pass
 
+    @abstractstaticmethod
+    def update_op(self, obj: DBUpdate):
+        pass
+
+    @abstractstaticmethod
+    def delete_op(self, obj: DBDelete):
+        pass
