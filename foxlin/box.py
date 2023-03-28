@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import Callable
 
 import orjson
@@ -11,23 +11,26 @@ class CreateJsonDB(DBOperation):
     op_name: str = "create_database"
     base_schema: DBCarrier = DBCarrier(db={"ID":{0:0}})
 
+class DBLoad(DBOperation):
+    op_name = 'LOAD'
+
 class JsonBox(FoxBox):
     file_type = '.json'
 
     def __init__(self, path: str):
-        self.path = pathlib.Path(path)
-
+        self.path = path
         if path.endswith(self.file_type):
-            if not self.path.exists():
+            if not Path(path).exists():
                 self.operate(CreateJsonDB(path=path))
-            self.data = self._load(path)
+
 
     def _load(self, path):
         with open(path,'r') as file:
             return orjson.loads(file.read())['db']
 
-    def load(self) -> DBCarrier:
-        return DBCarrier(db=self.data)
+    def load_op(self, obj: DBLoad) -> Any:
+        self.data = self._load(self.path)
+        return obj.callback.func(DBCarrier(db=self.data))
 
     def create_database_op(self,obj: CreateJsonDB):
         with open(obj.path,'w+',encoding='utf-8') as dbfile:
