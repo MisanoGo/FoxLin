@@ -18,12 +18,13 @@ class JsonBox(FoxBox):
         self.path = pathlib.Path(path)
 
         if path.endswith(self.file_type):
-            if self.path.exists():
-                with open(path,'r') as file:
-                    self.data = orjson.loads(file)
-
-            else:
+            if not self.path.exists():
                 self.operate(CreateJsonDB(path=path))
+            self.data = self._load(path)
+
+    def _load(self, path):
+        with open(path,'r') as file:
+            return orjson.loads(file.read())['db']
 
     def load(self) -> DBCarrier:
         return DBCarrier(db=self.data)
