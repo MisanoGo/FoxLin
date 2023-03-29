@@ -38,8 +38,8 @@ class FoxLin(object):
             self._load(dbc)
 
     def commit(self,*operation: Tuple[CRUDOperation]):
-        for o in operation:
-            self.file_system.operate(o)
+        operation = (*operation, *self._commit_list) if self.auto_commit else operation
+        return self.file_system.operate(*operation)
 
     @staticmethod
     def _auto_commit(f):

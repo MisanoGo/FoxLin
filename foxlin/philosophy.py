@@ -46,9 +46,10 @@ class FoxBox(ABC):
     def load_op(self) -> DBCarrier:
         raise NotImplementedError
 
-    def operate(self,obj: DBOperation):
-        operator: Callable = self.__getattribute__(obj.op_name.lower()+'_op')
-        return operator(obj)
+    def operate(self,*obj: DBOperation):
+        for o in obj:
+            operator: Callable = self.__getattribute__(o.op_name.lower()+'_op')
+            operator(o)
 
     @abstractstaticmethod
     def read_op(self, obj: DBRead):
