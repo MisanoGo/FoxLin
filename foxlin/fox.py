@@ -22,7 +22,7 @@ class FoxLin(object):
         self.auto_commit = auto_commit
         self.commit_rate = commit_rate
         self.schema: Schema = schema
-        self.file_system = file_system(self.path)
+        self.file_system = file_system(self.path, self.schema)
 
         self.__db: DB_TYPE = {}
 
@@ -30,6 +30,7 @@ class FoxLin(object):
 
     def _load(self, dbc: DBCarrier):
         self.__db = dbc.db
+        print(type(dbc.db['ID']))
 
     def _validate(self, dbc: DBCarrier):
         scl: List[str] = self.schema.construct().schema()['properties'].keys() # get user definate Schema column list
@@ -48,7 +49,7 @@ class FoxLin(object):
             self._commit_rate += 1
             com = f(self,*args,**kwargs)
 
-            if self._commit_rate == self.commit_rate:
+            if self._commit_rate >= self.commit_rate:
                 self.commit(DBDump(db=self.__db))
                 self._commit_rate = 0
         return op

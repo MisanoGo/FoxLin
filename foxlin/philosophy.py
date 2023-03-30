@@ -3,17 +3,20 @@ from typing import List, Dict, Union, Callable, Any
 
 from pydantic import BaseModel
 
+from tog import TupleGraph
+
 ID = str
 COLUMN = str
-VALID_DATA_TYPES = Union[str,int]
-RECORDS = Dict[ID, Union[VALID_DATA_TYPES, List[VALID_DATA_TYPES]]]
-DB_TYPE = Dict[COLUMN,RECORDS]
+DB_TYPE = Dict[COLUMN,TupleGraph]
 
 class Schema(BaseModel):
     ID: ID
 
 class DBCarrier(BaseModel):
     db: DB_TYPE
+
+    class Config:
+        arbitrary_types_allowed = True
 
 class DBOperation(BaseModel):
     op_name: str
