@@ -38,7 +38,7 @@ class JsonBox(FoxBox):
 
     def _dump(self, data: Dict):
         with open(self.path,'wb+')as dbfile:
-            dbfile.write(orjson.dumps(data))
+            dbfile.write(orjson.dumps(data,default=tg_typer))
 
     def load_op(self, obj: DBLoad) -> Any:
         data = self._load()

@@ -5,6 +5,11 @@ from pydantic import BaseModel
 
 from tog import TupleGraph
 
+def tg_typer(obj):
+    if isinstance(obj, TupleGraph):
+        return obj.data
+
+
 ID = str
 COLUMN = str
 DB_TYPE = Dict[COLUMN,TupleGraph]
