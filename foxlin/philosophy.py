@@ -5,14 +5,14 @@ from pydantic import BaseModel
 
 from tog import TupleGraph
 
-def tg_typer(obj):
-    if isinstance(obj, TupleGraph):
-        return obj.data
-
 
 ID = str
 COLUMN = str
 DB_TYPE = Dict[COLUMN,TupleGraph]
+
+class BaseModel(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
 
 class Schema(BaseModel):
     ID: ID
@@ -20,15 +20,16 @@ class Schema(BaseModel):
 class DBCarrier(BaseModel):
     db: DB_TYPE
 
-    class Config:
-        arbitrary_types_allowed = True
-
 class DBOperation(BaseModel):
+    """
+    for manage operation in the different data management level of program,
+    we use DBOperation to transfer operation between levels
+    """
     op_name: str
     callback: Callable= None
 
 class CRUDOperation(DBOperation):
-    record : BaseModel
+    record : Schema
 
 class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'
@@ -43,32 +44,4 @@ class DBUpdate(CRUDOperation):
 class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
 
-class FoxBox():
-    def __init__(self):
-        raise NotImplementedError
 
-    @abstractstaticmethod
-    def load_op(self) -> DBCarrier:
-        raise NotImplementedError
-
-    def operate(self,obj: DBOperation):
-        operator: Callable = self.__getattribute__(obj.op_name.lower()+'_op')
-        result =  operator(obj)
-
-        return obj.callback(result) if obj.callback else result
-
-    @abstractstaticmethod
-    def read_op(self, obj: DBRead):
-        pass
-
-    @abstractstaticmethod
-    def create_op(self, obj: DBCreate):
-        pass
-
-    @abstractstaticmethod
-    def update_op(self, obj: DBUpdate):
-        pass
-
-    @abstractstaticmethod
-    def delete_op(self, obj: DBDelete):
-        pass

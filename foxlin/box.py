@@ -7,6 +7,41 @@ from philosophy import *
 from tog import TupleGraph
 from utils import getStructher
 
+class FoxBox():
+    """
+    Foxbox is a operate manager for CRUD and user-self operator definated
+    can use in states of memory-cache database and file-based db
+    """
+    def __init__(self):
+        raise NotImplementedError
+
+    @abstractstaticmethod
+    def load_op(self) -> DBCarrier:
+        raise NotImplementedError
+
+    def operate(self,obj: DBOperation):
+        operator: Callable = self.__getattribute__(obj.op_name.lower()+'_op')
+        result =  operator(obj)
+
+        return obj.callback(result) if obj.callback else result
+
+    @abstractstaticmethod
+    def read_op(self, obj: DBRead):
+        pass
+
+    @abstractstaticmethod
+    def create_op(self, obj: DBCreate):
+        pass
+
+    @abstractstaticmethod
+    def update_op(self, obj: DBUpdate):
+        pass
+
+    @abstractstaticmethod
+    def delete_op(self, obj: DBDelete):
+        pass
+
+
 class CreateJsonDB(DBOperation):
     op_name: str = "create_database"
     base_schema: Schema = None
@@ -18,6 +53,9 @@ class DBDump(DBCarrier,DBOperation):
     op_name = 'DUMP'
     
 class JsonBox(FoxBox):
+    """
+    JsonBox is the subclass of FoxBox object for manage operation in json file state
+    """
     file_type = '.json'
 
     def __init__(self, path: str, schema: Schema):

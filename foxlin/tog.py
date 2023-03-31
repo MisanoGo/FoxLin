@@ -12,6 +12,7 @@ class TupleGraph(UserDict):
             return self.data[i]
         elif i in self.bvdata:
             return self.bvdata[i]
+        raise KeyError(i)
     
     def __setitem__(self,k,v):
         self.data[k] = v
@@ -29,3 +30,6 @@ class TupleGraph(UserDict):
     def __contains__(self, key):
         return key in self.data or key in self.bvdata
 
+def tg_typer(obj):
+    if isinstance(obj, TupleGraph):
+        return obj.data
