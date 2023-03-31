@@ -3,13 +3,13 @@ from typing import Callable
 
 import orjson
 
-import philosophy as sophy
 from philosophy import *
 from tog import TupleGraph
+from utils import getStructher
 
 class CreateJsonDB(DBOperation):
     op_name: str = "create_database"
-    base_schema: sophy.Schema = None
+    base_schema: Schema = None
 
 class DBLoad(DBOperation):
     op_name = 'LOAD'
@@ -48,12 +48,5 @@ class JsonBox(FoxBox):
         self._dump({'db':obj.dict()['db']})
 
     def create_database_op(self,obj: CreateJsonDB):
-        print(obj.base_schema)
-        structuer = {
-            'db' :{
-                c:{}
-                for c in obj.base_schema.construct().schema()['properties'].keys()
-            }
-        }
-        self._dump(structuer)
+        self._dump({'db':getStructher(obj.base_schema)})
 

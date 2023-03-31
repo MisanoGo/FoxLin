@@ -28,7 +28,7 @@ class DBOperation(BaseModel):
     callback: Callable= None
 
 class CRUDOperation(DBOperation):
-    record : Schema = Schema
+    record : BaseModel
 
 class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'
@@ -38,12 +38,13 @@ class DBRead(CRUDOperation):
 
 class DBUpdate(CRUDOperation):
     op_name: str = "UPDATE"
+    updated_fields: List[str]
 
 class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
 
 class FoxBox():
-    def __init__(self, path: str):
+    def __init__(self):
         raise NotImplementedError
 
     @abstractstaticmethod

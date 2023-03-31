@@ -5,87 +5,91 @@ from pydantic import BaseModel
 
 from philosophy import *
 from box import JsonBox,DBLoad, DBDump
+from utils import getStructher, getKeyList
 
 
-class FoxLin(object):
-    auto_commit: bool = True
-    _commit_rate: int = 0
-
+class Den(object):
     def __init__(self,
-                 path: str = None,
-                 schema: Schema = Schema,
-                 auto_commit: bool = True,
-                 commit_rate: int = 10,
-                 file_system: FoxBox = JsonBox
+                 db: DBCarrier,
+                 schema: Schema,
+                 commiter: Callable
             ):
-        self.path = path
-        self.auto_commit = auto_commit
-        self.commit_rate = commit_rate
-        self.schema: Schema = schema
-        self.file_system = file_system(self.path, self.schema)
+        self.__db: DB_TYPE = db
+        self._schema: Schema = schema
+        self._commiter = commiter
 
-        self.__db: DB_TYPE = {}
 
-        self.commit(DBLoad(callback=self._validate))
+        self._commit_list: List[CRUDOperation] = []
 
-    def _load(self, dbc: DBCarrier):
-        self.__db = dbc.db
-        print(type(dbc.db['ID']))
-
-    def _validate(self, dbc: DBCarrier):
-        scl: List[str] = self.schema.construct().schema()['properties'].keys() # get user definate Schema column list
-        dcl: List[str] = dbc.db.keys() # get raw database column
-
-        if scl == dcl:
-            self._load(dbc)
-
-    def commit(self,operation: DBDump):
-        return self.file_system.operate(operation)
 
     @staticmethod
-    def _auto_commit(f):
+    def commitRecorder(f) -> Callable:
         @functools.wraps(f)
-        def op(self,*args,**kwargs):
-            self._commit_rate += 1
-            com = f(self,*args,**kwargs)
-
-            if self._commit_rate >= self.commit_rate:
-                self.commit(DBDump(db=self.__db))
-                self._commit_rate = 0
-        return op
+        def wrapper(self, *args, **kwargs):
+            r = f(self,*args,*kwargs)
+            if isinstance(r,CRUDOperation):
+                self._commit_list.append(r)
+        return wrapper
 
     def select(self,ID: int) -> Schema:
         record = {c:self.__db[c][ID] for c in self.columns}
         return self.schema(**record)
 
-    def query(self):
-        pass
+    @commitRecorder
+    def insert(self, s: Schema) -> DBCreate:
+        return DBCreate(record=s)
 
-    def _insert_record(self,ID:int, column: str, data: Any):
-        self.__db[column][ID] = data
+    @commitRecorder
+    def update(self, s: Schema, updated_fields: List[str]) -> DBUpdate:
+        return DBUpdate(record=s,updated_fields=updated_fields)
 
-    @_auto_commit
-    def insert(self,s: Schema) -> DBCreate:
-        row_data = s.dict()
-        for c in self.columns:
-            self._insert_record(s.ID,c,row_data[c])
-
-    def _update_record(self,ID: int, column: str, data: Any):
-        self.__db[column][ID] = data
-
-    @_auto_commit
-    def update(self,s: Schema, updated_fields:List[str]) -> DBUpdate:
-        for c in updated_fields:
-            self._update_record(s.ID,c,s.dict()[c])
-
-    def _delete_record(self, ID: int, column: str):
-        self.__db[column].pop(ID)
-
-    @_auto_commit
+    @commitRecorder
     def delete(self, s: Schema) -> DBDelete:
-        for c in self.columns:
-            self._delete_record(s.ID,c)
+        return DBUpdate(record=s)
 
     @property
     def columns(self) -> List[str]:
         return list(self.__db.keys())
+
+    def commit(self):
+        self._commiter(self._commit_list)
+        del self
+
+
+class FoxLin(FoxBox):
+    def __init__(self,
+                 path: str = None,
+                 schema: Schema = Schema,
+            ):
+        self.path =path
+        self.schema = schema
+
+        self.rsc_box: FoxBox = JsonBox(self.path, self.schema)
+        self.rsc_box.operate(DBLoad(callback=self.load_op))
+
+    def load_op(self, dbc: DBCarrier):
+        scl: List[str] = getKeyList(self.schema) # get user definate Schema column list
+        dcl: List[str] = dbc.db.keys() # get raw database column
+
+        if scl == dcl:
+            self.__db = dbc.db
+    
+    def _commit(self,commit_list: List[CRUDOperation]):
+        list(map(self.operate, commit_list))
+
+        self.rsc_box.operate(DBDump(db=db))
+
+    def session(self) -> Den:
+        return Den(self.__db,self.schema,self._commit)
+
+    def read_op(self, obj: DBRead):
+        pront(obj)
+
+    def create_op(self, obj: DBCreate):
+        print(obj)
+
+    def update_op(self, obj: DBUpdate):
+        print(obj)
+
+    def delete_op(self, obj: DBDelete):
+        print(obj)
