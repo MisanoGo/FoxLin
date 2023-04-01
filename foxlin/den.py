@@ -15,7 +15,7 @@ class Den(object):
                  schema: Schema,
                  commiter: Callable
             ):
-        self.__db: DB_TYPE = db
+        self._db: DB_TYPE = db
         self._schema: Schema = schema
         self._commiter = commiter
 
@@ -33,12 +33,14 @@ class Den(object):
         return wrapper
 
     def select(self,ID: int) -> Schema:
-        record = {c:self.__db[c][ID] for c in self.columns}
+        record = {c:self._db[c][ID] for c in self.columns}
         return self.schema(**record)
 
     @_commitRecorder
     def insert(self, s: Schema) -> DBCreate:
-        return DBCreate(record=s)
+        return DBCreate(record = s,
+                        db = self._db
+                        )
 
     @_commitRecorder
     def update(self, s: Schema, updated_fields: List[str]) -> DBUpdate:
@@ -61,7 +63,7 @@ class DenManager(object):
     @property
     def sessionFactory(self):
         s = Den(
-                self.__db,
+                self._db,
                 self._schema,
                 self._commiter)
         return s
@@ -69,8 +71,10 @@ class DenManager(object):
     @property
     @contextmanager
     def session(self):
-        s = self.new_session
+        s = self.sessionFactory
         yield s
+        print(s._commit_list)
+        s.commit()
         del s
 
 

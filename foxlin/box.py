@@ -4,7 +4,7 @@ from typing import Callable
 import orjson
 
 from philosophy import *
-from tog import TupleGraph
+from tog import TupleGraph, tg_typer
 from utils import getStructher
 
 
@@ -38,7 +38,9 @@ class MemBox(FoxBox):
     level: str = 'memory'
 
     def create_op(self, obj: DBCreate):
-        pass
+        raw_data = obj.record.dict()
+        for c in obj.db.keys():
+            obj.db[c][obj.record.ID] = raw_data[c]
 
     def read_op(self, obj: DBRead):
         pass
@@ -53,8 +55,9 @@ class MemBox(FoxBox):
 
 class CreateJsonDB(DBOperation):
     op_name: str = "create_database"
-    
     base_schema: Schema = None
+    path: str
+    levels: List[LEVEL] = ['jsonfile']
 
 class DBLoad(DBOperation):
     op_name = 'LOAD'
@@ -63,6 +66,7 @@ class DBLoad(DBOperation):
 class DBDump(DBCarrier,DBOperation):
     op_name = 'DUMP'
     path: str = ''
+    levels: List[LEVEL] = ['log','jsonfile']
 
 class JsonBox(FoxBox):
     """

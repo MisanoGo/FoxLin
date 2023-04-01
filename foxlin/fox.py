@@ -4,7 +4,7 @@ import functools
 from pydantic import BaseModel
 
 from philosophy import *
-from box import FoxBox,JsonBox, MemBox, LogBox,DBLoad
+from box import FoxBox,JsonBox, MemBox, LogBox,DBLoad, DBDump
 from den import DenManager
 
 from utils import getStructher, getKeyList
@@ -31,6 +31,7 @@ class FoxLin(DenManager):
         dbdo = DBLoad(
                 callback = self.load_op,
                 callback_level = JsonBox.level,
+                levels = [JsonBox.level,LogBox.level],
                 path=path)
 
         self.box.operate(dbdo)
@@ -41,11 +42,10 @@ class FoxLin(DenManager):
         dcl: List[str] = dbc.db.keys() # get raw database column
 
         if scl == dcl: # validate database columns with schema columns
-            self.__db = dbc.db
+            self._db = dbc.db
     
     def _commit(self,commit_list: List[CRUDOperation]):
-        list(map(self.box.perate, commit_list))
-
-        self.parent.operate(DBDump(db=self.__db))
+        list(map(self.box.operate, commit_list))
+        self.box.operate(DBDump(db=self._db,path=self.path))
 
 

@@ -22,9 +22,8 @@ class DBCarrier(BaseModel):
     db: DB_TYPE
 
 class Log(BaseModel):
-    level: str
-    message: str = ''
-
+    box_level: str
+    log_level: str
 
 class DBOperation(BaseModel):
     """
@@ -39,7 +38,8 @@ class DBOperation(BaseModel):
     logs: List[Log] = []
 
 
-class CRUDOperation(DBOperation):
+class CRUDOperation(DBOperation, DBCarrier):
+    levels: List[LEVEL] = ['memory','log']
     record : Schema
 
 class DBCreate(CRUDOperation):
