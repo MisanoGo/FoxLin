@@ -8,6 +8,7 @@ from tog import TupleGraph
 
 ID = str
 COLUMN = str
+LEVEL = str
 DB_TYPE = Dict[COLUMN,TupleGraph]
 
 class BaseModel(BaseModel):
@@ -20,13 +21,23 @@ class Schema(BaseModel):
 class DBCarrier(BaseModel):
     db: DB_TYPE
 
+class Log(BaseModel):
+    level: str
+    message: str = ''
+
+
 class DBOperation(BaseModel):
     """
     for manage operation in the different data management level of program,
     we use DBOperation to transfer operation between levels
     """
     op_name: str
-    callback: Callable= None
+    callback: Callable = None
+    callback_level: LEVEL = None# that level callback can call
+
+    levels: List[LEVEL] = ['log']
+    logs: List[Log] = []
+
 
 class CRUDOperation(DBOperation):
     record : Schema

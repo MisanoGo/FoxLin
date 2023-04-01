@@ -4,46 +4,48 @@ import functools
 from pydantic import BaseModel
 
 from philosophy import *
-from box import JsonBox,DBLoad, DBDump
+from box import FoxBox,JsonBox, MemBox, LogBox,DBLoad
 from den import DenManager
 
 from utils import getStructher, getKeyList
 
 
-class FoxLin(FoxBox,DenManager):
+BASIC_BOX = MemBox(JsonBox(LogBox()))
+
+
+class FoxLin(DenManager):
     """
 
     """
     def __init__(self,
                  path: str = None,
                  schema: Schema = Schema,
-            ):
-        self.path =path
-        self.schema = schema
+                 box: FoxBox = BASIC_BOX,
 
-        self.rsc_box: FoxBox = JsonBox(self.path, self.schema)
-        self.rsc_box.operate(DBLoad(callback=self.load_op))
+                 ):
+        self.path = path
+        self.box = box
+        self._schema = schema
+        self._commiter = self._commit
+
+        dbdo = DBLoad(
+                callback = self.load_op,
+                callback_level = JsonBox.level,
+                path=path)
+
+        self.box.operate(dbdo)
 
     def load_op(self, dbc: DBCarrier):
-        scl: List[str] = getKeyList(self.schema) # get user definate Schema column list
+        print(dbc)
+        scl: List[str] = getKeyList(self._schema) # get user definate Schema column list
         dcl: List[str] = dbc.db.keys() # get raw database column
 
         if scl == dcl: # validate database columns with schema columns
             self.__db = dbc.db
     
     def _commit(self,commit_list: List[CRUDOperation]):
-        list(map(self.operate, commit_list))
+        list(map(self.box.perate, commit_list))
 
-        self.rsc_box.operate(DBDump(db=self.__db))
+        self.parent.operate(DBDump(db=self.__db))
 
-    def read_op(self, obj: DBRead):
-        pront(obj)
 
-    def create_op(self, obj: DBCreate):
-        print(obj)
-
-    def update_op(self, obj: DBUpdate):
-        print(obj)
-
-    def delete_op(self, obj: DBDelete):
-        print(obj)

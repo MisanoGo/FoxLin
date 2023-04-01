@@ -1,3 +1,9 @@
+from contextlib import contextmanager
+import functools
+
+
+from philosophy import *
+
 class Den(object):
     """
     Den is session model for FoxLin DB manager
@@ -32,7 +38,6 @@ class Den(object):
 
     @_commitRecorder
     def insert(self, s: Schema) -> DBCreate:
-        print(type(s))
         return DBCreate(record=s)
 
     @_commitRecorder
@@ -49,8 +54,26 @@ class Den(object):
 
     def commit(self):
         self._commiter(self._commit_list)
-        del self
+
 
 class DenManager(object):
-    pass
+
+    @property
+    def sessionFactory(self):
+        s = Den(
+                self.__db,
+                self._schema,
+                self._commiter)
+        return s
+
+    @property
+    @contextmanager
+    def session(self):
+        s = self.new_session
+        yield s
+        del s
+
+
+
+
 
