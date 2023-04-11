@@ -2,7 +2,7 @@ from typing import List, Callable
 from contextlib import contextmanager
 import functools
 
-
+from joq import JsonQuery
 from philosophy import (
     Schema,
     DBCarrier,
@@ -44,29 +44,33 @@ class Den(object):
 
     def select(self,ID: int) -> Schema:
         record = {c:self._db[c][ID] for c in self.columns}
-        return self.schema(**record)
+        return self._schema(**record)
 
     @_commitRecorder
     def insert(self, *s: Schema) -> DBCreate:
-        return DBCreate(record = s,
-                        db = self._db
-                        )
+        return DBCreate(record=s, db=self._db)
 
     @_commitRecorder
-    def update(self, s: Schema, updated_fields: List[str]) -> DBUpdate:
+    def update(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
         return DBUpdate(record=s,updated_fields=updated_fields)
 
     @_commitRecorder
-    def delete(self, s: Schema) -> DBDelete:
+    def delete(self, *s: Schema) -> DBDelete:
         return DBDelete(record=s)
 
     @property
     def columns(self) -> List[str]:
-        return list(self.__db.keys())
+        return list(self._db.keys())
 
     def commit(self):
         self._commiter(self._commit_list)
+        self.rollback()
+
+    def rollback(self):
         self._commit_list = []
+
+    def SELECT(self, *args, **kwargs):
+        return JsonQuery(self).SELECT(*args,**kwargs)
 
     __slots__ = ('_insert','_commit','_db','_schema','_commiter','_commit_list')
 
