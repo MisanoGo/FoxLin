@@ -44,7 +44,7 @@ class DBOperation(BaseModel):
 
 class CRUDOperation(DBOperation, DBCarrier):
     levels: List[LEVEL] = ['memory','log']
-    record : Schema
+    record : Schema | List[Schema]
 
 class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'

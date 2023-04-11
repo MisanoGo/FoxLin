@@ -1,14 +1,17 @@
-from typing import List,Dict, Tuple ,Any ,Union
-import functools
+from typing import List
 
-from pydantic import BaseModel
-
-from philosophy import *
-from box import FoxBox, JsonBox, MemBox, LogBox, DBLoad, DBDump, BoxManager
+from philosophy import Schema, CRUDOperation
 from den import DenManager
+from box import (
+    BoxManager,
+    FoxBox,
+    MemBox,
+    JsonBox,
+    LogBox,
 
-from utils import getStructher, getKeyList
-
+    DBLoad,
+    DBDump,
+)
 
 BASIC_BOX = [MemBox,JsonBox,LogBox]
 
@@ -20,28 +23,30 @@ class FoxLin(BoxManager,DenManager):
     def __init__(self,
                  path: str = None,
                  schema: Schema = Schema,
-                 box: FoxBox = BASIC_BOX
+                 box: List[FoxBox] = BASIC_BOX
                  ):
+
         self.path = path
-        self._schema = schema
-        self._commiter = self._commit
+        self.schema = schema
 
         super(FoxLin, self).__init__(*box)
+        self.load()
 
+    def load(self):
         dbdo = DBLoad(
                 callback = self.__set_db,
                 callback_level = JsonBox.level,
-                levels = [JsonBox.level,LogBox.level],
-                path = path)
+                path = self.path)
 
-        dbdo.structure = schema
+        dbdo.structure = self.schema
         self.operate(dbdo)
 
     def __set_db(self, obj: DBLoad):
         self._db = obj.db
-    
-    def _commit(self,commit_list: List[CRUDOperation]):
+
+    def _commiter(self,commit_list: List[CRUDOperation]): # call when session.commit() called
         list(map(self.operate,commit_list))
         self.operate(DBDump(db=self._db,path=self.path))
 
 
+#__all__ = __slots__ = ('FoxLin','BASIC_BOX','Schema')

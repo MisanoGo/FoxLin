@@ -1,8 +1,19 @@
+from typing import List, Callable
 from contextlib import contextmanager
 import functools
 
 
-from philosophy import *
+from philosophy import (
+    Schema,
+    DBCarrier,
+    DB_TYPE,
+    CRUDOperation,
+
+    DBCreate,
+    DBRead,
+    DBUpdate,
+    DBDelete,
+)
 
 class Den(object):
     """
@@ -36,7 +47,7 @@ class Den(object):
         return self.schema(**record)
 
     @_commitRecorder
-    def insert(self, s: Schema) -> DBCreate:
+    def insert(self, *s: Schema) -> DBCreate:
         return DBCreate(record = s,
                         db = self._db
                         )
@@ -47,7 +58,7 @@ class Den(object):
 
     @_commitRecorder
     def delete(self, s: Schema) -> DBDelete:
-        return DBUpdate(record=s)
+        return DBDelete(record=s)
 
     @property
     def columns(self) -> List[str]:
@@ -57,6 +68,7 @@ class Den(object):
         self._commiter(self._commit_list)
         self._commit_list = []
 
+    __slots__ = ('_insert','_commit','_db','_schema','_commiter','_commit_list')
 
 class DenManager(object):
 
@@ -64,7 +76,7 @@ class DenManager(object):
     def sessionFactory(self):
         s = Den(
                 self._db,
-                self._schema,
+                self.schema,
                 self._commiter)
         return s
 
@@ -76,3 +88,4 @@ class DenManager(object):
         s.commit()
         del s
 
+    __slots__ = ('_session','_sessionFactory')

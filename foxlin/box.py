@@ -6,6 +6,7 @@ from typing import (
 )
 
 import orjson
+from numba import njit
 
 from philosophy import (
     DBOperation,
@@ -47,11 +48,12 @@ class FoxBox:
 
 class MemBox(FoxBox):
     level: str = 'memory'
-
     def create_op(self, obj: DBCreate):
-        raw_data = obj.record.dict()
-        ID = obj.record.ID
-        list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.db.keys()))
+        for record in obj.record:
+            raw_data = record.dict()
+            ID = record.ID
+            for c in obj.db.keys():
+                obj.db[c].update({ID:raw_data[c]})
 
     def read_op(self, obj: DBRead):
         pass
@@ -62,10 +64,10 @@ class MemBox(FoxBox):
         list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.updated_fields))
 
     def delete_op(self, obj: DBUpdate):
-        raw_data = obj.record.dict()
         ID = obj.record.ID
         list(map(lambda c:obj.db[c].pop(ID),obj.db.keys()))
-
+    
+    __slots__ = ('_create_op','_level')
 
 class JsonDBOP(DBOperation):
     path: str
