@@ -10,7 +10,7 @@ class JsonQuery(object):
     def __init__(self, session):
         self.session = session
         self.records = []
-        self.clear()
+        self.reset()
 
     def reset(self):
         self.records = list(self.session._db['ID'].values())
