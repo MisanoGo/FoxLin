@@ -1,19 +1,20 @@
-from abc import ABC, abstractstaticmethod
 from typing import List, Dict, Union, Callable, Any
 
 from pydantic import BaseModel
 
-from tog import TupleGraph
+from .tog import TupleGraph
 
 
 ID = str
 COLUMN = str
 LEVEL = str
-DB_TYPE = Dict[COLUMN,TupleGraph]
+DB_TYPE = Dict[COLUMN, TupleGraph]
+
 
 class BaseModel(BaseModel):
     class Config:
         arbitrary_types_allowed = True
+
 
 class Schema(BaseModel):
     """
@@ -21,13 +22,16 @@ class Schema(BaseModel):
     """
     ID: ID
 
+
 class DBCarrier(BaseModel):
     db: DB_TYPE = None
+
 
 class Log(BaseModel):
     box_level: str
     log_level: str
     message: object = None
+
 
 class DBOperation(BaseModel):
     """
@@ -36,28 +40,32 @@ class DBOperation(BaseModel):
     """
     op_name: str
     callback: Callable = None
-    callback_level: LEVEL = None# that level callback can call
+    callback_level: LEVEL = None  # that level callback can call
 
     levels: List[LEVEL] = ['log']
     logs: List[Log] = []
 
 
 class CRUDOperation(DBOperation, DBCarrier):
-    levels: List[LEVEL] = ['memory','log']
-    record : Schema | List[Schema]
+    levels: List[LEVEL] = ['memory', 'log']
+    record: Schema | List[Schema]
+
 
 class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'
 
+
 class DBRead(CRUDOperation):
     op_name: str = "READ"
+
 
 class DBUpdate(CRUDOperation):
     op_name: str = "UPDATE"
     updated_fields: List[str]
 
+
 class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
+
     record: List[ID]
-
-
+      

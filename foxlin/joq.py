@@ -1,3 +1,13 @@
+
+"""
+Joq.py used for Dbms queries
+every dbms queries will write in JsonQuery object as methods
+using by: query = JsonQuery()
+          query.<query_method_name>()
+"""
+
+
+
 class JsonQuery(object):
     def __init__(self, session):
         self.session = session
@@ -12,20 +22,21 @@ class JsonQuery(object):
             yield self.session.get_by_id(ID)
         self.reset()
 
-    def SELECT(self,*args,**kwargs):
+    def SELECT(self, *args, **kwargs):
         return self
 
     def WHERE(self, column, operator, value):
         self.records = list(self.session._db[column].bvdata[value])
+
         return self
 
-    def GROUP_BY(self,*args,**kwargs):
+    def GROUP_BY(self, *args, **kwargs):
         return self
 
-    def ORDER_BY(self,*args,**kwargs):
+    def ORDER_BY(self, *args, **kwargs):
         return self
 
-    def HAVING(self,*args,**kwargs):
+    def HAVING(self, *args, **kwargs):
         return self
 
     def LIMIT(self, n: int):

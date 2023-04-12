@@ -2,8 +2,8 @@ from typing import List, Dict, Callable
 from contextlib import contextmanager
 import functools
 
-from joq import JsonQuery
-from philosophy import (
+from .joq import JsonQuery
+from .philosophy import (
     Schema,
     DBCarrier,
     DB_TYPE,
@@ -16,31 +16,34 @@ from philosophy import (
     DBDelete,
 )
 
+
 class Den(object):
     """
-    Den is session model for FoxLin DB manager
-    oriented by SQL DML,TCL,DQL logic
+    Den is session model for FoxLin DB manager here
+    Den records operations on database and over then commited,
+    commit list will send to Foxlin for real operate
+
+   oriented by SQL DML,TCL,DQL logic
+
     """
     def __init__(self,
                  db: DBCarrier,
                  schema: Schema,
                  commiter: Callable
-            ):
+                 ):
         self._db: DB_TYPE = db
         self._schema: Schema = schema
         self._commiter = commiter
 
-
         self._commit_list: List[CRUDOperation] = []
         self._commit_point: Dict[str,List] = {}
-
 
     @staticmethod
     def _commitRecorder(f) -> Callable:
         @functools.wraps(f)
         def wrapper(self, *args, **kwargs):
-            r = f(self,*args,**kwargs)
-            if isinstance(r,CRUDOperation):
+            r = f(self, *args, **kwargs)
+            if isinstance(r, CRUDOperation):
                 self._commit_list.append(r)
             return r
         return wrapper
@@ -50,6 +53,7 @@ class Den(object):
 
     def get_by_id(self,ID: int) -> Schema:
         record = {c:self._db[c][ID] for c in self._db.keys()}
+
         return self._schema(**record)
 
     @_commitRecorder
@@ -57,8 +61,9 @@ class Den(object):
         return DBCreate(record=s, db=self._db)
 
     @_commitRecorder
-    def UPDATE(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
-        return DBUpdate(record=s,updated_fields=updated_fields)
+
+    def update(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
+        return DBUpdate(record=s, updated_fields=updated_fields)
 
     @_commitRecorder
     def DELETE(self, *ID: int) -> DBDelete:
@@ -80,12 +85,14 @@ class Den(object):
         self._commit_point[name] = self._commit_list
         self.ROLLBACK()
 
+
     def discard(self, op:DBOperation = None):
         # remove specified operation or last operation in commit list
         if op : self._commit_list.remove(op)
         else: self._commit_list.pop()
 
     #__slots__ = ('_insert','_commit','_db','_schema','_commiter','_commit_list')
+
 
 class DenManager(object):
 
@@ -105,4 +112,4 @@ class DenManager(object):
         s.COMMIT()
         del s
 
-    __slots__ = ('_session','_sessionFactory')
+    __slots__ = ('_session', '_sessionFactory')
