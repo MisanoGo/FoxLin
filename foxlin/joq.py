@@ -1,9 +1,11 @@
+
 """
 Joq.py used for Dbms queries
 every dbms queries will write in JsonQuery object as methods
 using by: query = JsonQuery()
           query.<query_method_name>()
 """
+
 
 
 class JsonQuery(object):
@@ -16,14 +18,16 @@ class JsonQuery(object):
         self.records = list(self.session._db['ID'].values())
 
     def get(self):
-        data = [self.session.select(ID) for ID in self.records]
+        for ID in self.records:
+            yield self.session.get_by_id(ID)
         self.reset()
-        return data
 
     def SELECT(self, *args, **kwargs):
         return self
 
-    def WHERE(self, *args, **kwargs):
+    def WHERE(self, column, operator, value):
+        self.records = list(self.session._db[column].bvdata[value])
+
         return self
 
     def GROUP_BY(self, *args, **kwargs):
