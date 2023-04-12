@@ -6,7 +6,6 @@ from typing import (
 )
 
 import orjson
-from numba import njit
 
 from philosophy import (
     DBOperation,
@@ -52,20 +51,20 @@ class MemBox(FoxBox):
         for record in obj.record:
             raw_data = record.dict()
             ID = record.ID
-            for c in obj.db.keys():
-                obj.db[c].update({ID:raw_data[c]})
+            list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.db.keys()))
 
     def read_op(self, obj: DBRead):
         pass
 
     def update_op(self, obj: DBUpdate):
-        raw_data = obj.record.dict()
-        ID = obj.record.ID
-        list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.updated_fields))
+        for record in obj.record:
+            raw_data = record.dict()
+            ID = record.ID
+            list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.updated_fields))
 
     def delete_op(self, obj: DBUpdate):
-        ID = obj.record.ID
-        list(map(lambda c:obj.db[c].pop(ID),obj.db.keys()))
+        for ID in obj.record:
+            list(map(lambda c:obj.db[c].pop(ID),obj.db.keys()))
     
     __slots__ = ('_create_op','_level')
 

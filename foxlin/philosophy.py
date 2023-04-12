@@ -58,5 +58,6 @@ class DBUpdate(CRUDOperation):
 
 class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
+    record: List[ID]
 
 
