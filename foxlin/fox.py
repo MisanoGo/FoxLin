@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from .philosophy import Schema, CRUDOperation
@@ -8,6 +9,7 @@ from .box import (
     MemBox,
     JsonBox,
     LogBox,
+    CreateJsonDB,
 
     DBLoad,
     DBDump,
@@ -30,7 +32,6 @@ class FoxLin(BoxManager, DenManager):
         self.schema = schema
 
         super(FoxLin, self).__init__(*box)
-        self.load()
 
     def load(self):
         dbdo = DBLoad(
@@ -40,6 +41,16 @@ class FoxLin(BoxManager, DenManager):
 
         dbdo.structure = self.schema
         self.operate(dbdo)
+
+    def create_database(self):
+        file_path = self.path
+        if os.path.exists(file_path):
+            raise Exception
+
+        json_db = CreateJsonDB(path=file_path)
+        json_db.structure = self.schema
+        JsonBox().operate(json_db)
+
 
     def __set_db(self, obj: DBLoad):
         self._db = obj.db

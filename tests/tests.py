@@ -36,21 +36,16 @@ def fake_data(table):
     ]
     return data
 
-
-@pytest.fixture(scope="session")
-def generate_file(table):
-    file_path = os.path.join(BASE_DIR, "tests/test.json")
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    json_db = CreateJsonDB(path=file_path)
-    json_db.structure = table
-    JsonBox().operate(json_db)
-    return file_path
-
-
 class TestFoxLin:
-    def test_dbms(self, table, fake_data, generate_file):
-        foxlin = FoxLin(generate_file, table)
+    def test_dbms(self, table, fake_data):
+        path = os.path.join(BASE_DIR, 'tests/test.json')
+        if os.path.exists(path):
+            os.remove(path)
+
+        foxlin = FoxLin(path, table)
+        foxlin.create_database()
+        foxlin.load()
+
         with foxlin.session as fox_session:
             fox_session.INSERT(*fake_data)
             fox_session.COMMIT()
