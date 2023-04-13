@@ -36,8 +36,9 @@ def fake_data(table):
     ]
     return data
 
+
 class TestFoxLin:
-    def test_dbms(self, table, fake_data):
+    def dbms(self, table, fake_data):
         path = os.path.join(BASE_DIR, 'tests/test.json')
         if os.path.exists(path):
             os.remove(path)
@@ -48,4 +49,9 @@ class TestFoxLin:
             fox_session.INSERT(*fake_data)
             fox_session.COMMIT()
             foxlin.load()
-            assert list(fox_session.SELECT().get()) == fake_data
+            return list(fox_session.SELECT().get())
+
+    def test_dbms_benchmark(self, benchmark, table, fake_data):
+        func = self.dbms
+        result = benchmark(func, table, fake_data)
+        assert result == fake_data
