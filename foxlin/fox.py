@@ -25,13 +25,23 @@ class FoxLin(BoxManager, DenManager):
     def __init__(self,
                  path: str = None,
                  schema: Schema = Schema,
-                 box: List[FoxBox] = BASIC_BOX
+                 box: List[FoxBox] = BASIC_BOX,
+                 auto_setup: bool = True
                  ):
 
         self.path = path
         self.schema = schema
 
         super(FoxLin, self).__init__(*box)
+        if auto_setup : self.auto_setup()
+
+    def auto_setup(self):
+        try:
+            self.create_database()
+        except:
+            pass
+        finally:
+            self.load()
 
     def load(self):
         dbdo = DBLoad(
@@ -44,13 +54,11 @@ class FoxLin(BoxManager, DenManager):
 
     def create_database(self):
         file_path = self.path
-        if os.path.exists(file_path):
-            raise Exception
+        assert not os.path.exists(file_path), Exception # TODO: set appropriate Exception
 
         json_db = CreateJsonDB(path=file_path)
         json_db.structure = self.schema
         JsonBox().operate(json_db)
-
 
     def __set_db(self, obj: DBLoad):
         self._db = obj.db

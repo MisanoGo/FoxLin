@@ -43,8 +43,6 @@ class TestFoxLin:
             os.remove(path)
 
         foxlin = FoxLin(path, table)
-        foxlin.create_database()
-        foxlin.load()
 
         with foxlin.session as fox_session:
             fox_session.INSERT(*fake_data)
