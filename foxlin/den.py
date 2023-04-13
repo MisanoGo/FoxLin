@@ -61,8 +61,7 @@ class Den(object):
         return DBCreate(record=s, db=self._db)
 
     @_commitRecorder
-
-    def update(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
+    def UPDATE(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
         return DBUpdate(record=s, updated_fields=updated_fields)
 
     @_commitRecorder
