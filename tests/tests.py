@@ -52,7 +52,7 @@ class TestFoxLin:
     def test_dbms(self, table, fake_data, generate_file):
         foxlin = FoxLin(generate_file, table)
         with foxlin.session as fox_session:
-            fox_session.insert(*fake_data)
-            fox_session.commit()
+            fox_session.INSERT(*fake_data)
+            fox_session.COMMIT()
             foxlin.load()
-            assert fox_session.SELECT().get() == fake_data
+            assert list(fox_session.SELECT().get()) == fake_data
