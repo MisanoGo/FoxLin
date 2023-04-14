@@ -51,9 +51,8 @@ class Den(object):
     def SELECT(self, *args, **kwargs):
         return JsonQuery(self).SELECT(*args,**kwargs)
 
-    def get_by_id(self,ID: int) -> Schema:
+    def get_by_id(self, ID: str) -> Schema:
         record = {c:self._db[c][ID] for c in self._db.keys()}
-
         return self._schema(**record)
 
     @_commitRecorder

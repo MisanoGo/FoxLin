@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-
 def getKeyList(obj: BaseModel):
     return obj.construct().schema()['properties'].keys()
 

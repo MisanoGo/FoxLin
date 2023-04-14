@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from .tog import TupleGraph
 
-ID = int
+ID = str
 COLUMN = str
 LEVEL = str
 DB_TYPE = Dict[COLUMN, TupleGraph]

@@ -26,13 +26,13 @@ def fake_data(table):
     faker = Faker()
     data = [
         table(
-            ID=number,
+            ID=str(number),
             name=faker.name(),
             family=faker.name(),
             address=faker.address(),
             bio=faker.text(),
             age=random.randint(10, 80)
-        ) for number in range(10)
+        ) for number in range(1,10)
     ]
     return data
 

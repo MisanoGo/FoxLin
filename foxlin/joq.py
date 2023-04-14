@@ -15,7 +15,8 @@ class JsonQuery(object):
         self.reset()
 
     def reset(self):
-        self.records = list(self.session._db['ID'].values())
+        ID_column = self.session._db['ID']
+        self.records = ID_column.values()[:ID_column.flag]
 
     def get(self):
         for ID in self.records:
@@ -27,7 +28,6 @@ class JsonQuery(object):
 
     def WHERE(self, column, operator, value):
         self.records = list(self.session._db[column].bvdata[value])
-
         return self
 
     def GROUP_BY(self, *args, **kwargs):
