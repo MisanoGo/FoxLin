@@ -58,7 +58,7 @@ class FoxLin(BoxManager, DenManager):
 
         json_db = CreateJsonDB(path=file_path)
         json_db.structure = self.schema
-        JsonBox().operate(json_db)
+        self.operate(json_db)
 
     def __set_db(self, obj: DBLoad):
         self._db = obj.db

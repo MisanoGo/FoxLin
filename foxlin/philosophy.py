@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from .tog import TupleGraph
 
 
-ID = str
 COLUMN = str
 LEVEL = str
 DB_TYPE = Dict[COLUMN, TupleGraph]
@@ -20,7 +19,7 @@ class Schema(BaseModel):
     """
     databaser schema aliaser & also record carrier
     """
-    ID: ID
+    ID: str | None = None
 
 
 class DBCarrier(BaseModel):
