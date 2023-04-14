@@ -25,7 +25,7 @@ def fake_data(table, count=10):
     faker = Faker()
     data = [
         table(
-            ID=number,
+            ID=str(number),
             name=faker.name(),
             family=faker.name(),
             address=faker.address(),
