@@ -5,7 +5,7 @@ from typing import Dict, Any, Iterable
 
 class TupleGraph:
 
-    def __init__(self, space: int=8, default=None, grow: bool=True):
+    def __init__(self, data: dict, space: int=8, default=None, grow: bool=True):
         self.k_array = np.zeros(space, dtype=np.int64)
         self.v_array = np.zeros(space, dtype=object)
 
@@ -14,6 +14,7 @@ class TupleGraph:
         self.__grow = grow
         self.relation: Dict[str,Dict[int,Any]] = {'k':{},
                                                   'v':{}}
+        self.update(data)
 
     def __getitem__(self, i):
         if type(i) is slice:
@@ -109,4 +110,4 @@ class TupleGraph:
 
 def tg_typer(obj):
     if isinstance(obj, TupleGraph):
-        return {k:v for k,v in zip(obj.k_array, obj.v_array)}
+        return {str(k):v for k,v in zip(obj.k_array, obj.v_array)}
