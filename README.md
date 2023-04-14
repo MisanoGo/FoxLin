@@ -48,10 +48,11 @@ simple, fast, funny json dbms base on python
 - [x] self log system
 - [x] session model
 - [x] transaction but by grouping commits **not ACDI**
-- [] neo dict implemented by numpy
-- [] add logs to .<database-name>.logs
-- [] genetate logs
-- [] quering
+- [ ] write test
+- [ ] neo dict implemented by numpy
+- [ ] add logs to .<database-name>.logs
+- [ ] genetate logs
+- [ ] quering
 
 ##### TODO at 1.1
 - asynchronus
