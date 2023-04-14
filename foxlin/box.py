@@ -104,7 +104,7 @@ class JsonBox(FoxBox):
         return scl == dcl  # validate database columns with schema columns
 
     def _translate(self, data: DB_TYPE):
-        data_n = {c: TupleGraph(**r) for c, r in data.items()}
+        data_n = {c: TupleGraph(r) for c, r in data.items()}
         return data_n
 
     def _load(self, path: str, schema: Schema):
