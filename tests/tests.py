@@ -4,10 +4,9 @@ import os
 
 from faker import Faker
 
-from foxlin.fox import FoxLin, Schema, BASIC_BOX
-from foxlin.box import CreateJsonDB, DBDump, JsonBox
+from foxlin.fox import FoxLin, Schema
 
-from main import BASE_DIR
+from config.settings import BASE_DIR
 
 
 @pytest.fixture(scope="session")
@@ -22,7 +21,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table):
+def fake_data(table, count=10):
     faker = Faker()
     data = [
         table(
@@ -32,12 +31,13 @@ def fake_data(table):
             address=faker.address(),
             bio=faker.text(),
             age=random.randint(10, 80)
-        ) for number in range(10)
+        ) for number in range(count)
     ]
     return data
 
+
 class TestFoxLin:
-    def test_dbms(self, table, fake_data):
+    def dbms(self, table, fake_data):
         path = os.path.join(BASE_DIR, 'tests/test.json')
         if os.path.exists(path):
             os.remove(path)
@@ -48,4 +48,9 @@ class TestFoxLin:
             fox_session.INSERT(*fake_data)
             fox_session.COMMIT()
             foxlin.load()
-            assert list(fox_session.SELECT().get()) == fake_data
+            return list(fox_session.SELECT().get())
+
+    def test_dbms_benchmark(self, benchmark, table, fake_data):
+        func = self.dbms
+        result = benchmark(func, table, fake_data)
+        assert result == fake_data
