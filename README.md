@@ -7,6 +7,10 @@ simple, fast, funny json dbms base on python
  - code : [todo]()
 
 
+### Futures :
+>   - TODO
+
+
 ## simple usage : 
 ```Python
     from foxlin import FoxLin, Schema
@@ -38,5 +42,18 @@ simple, fast, funny json dbms base on python
     print(myrecord.name, myrecord.username, myrecord.password)
 ```
 
+##### TODO in 1.0
+- [x] crud
+- [x] level base operation manager
+- [x] self log system
+- [x] session model
+- [x] transaction but by grouping commits **not ACDI**
+- [] neo dict implemented by numpy
+- [] add logs to .<database-name>.logs
+- [] genetate logs
+- [] quering
 
+##### TODO at 1.1
+- asynchronus
+- transaction ACDI
 
