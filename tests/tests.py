@@ -4,10 +4,9 @@ import os
 
 from faker import Faker
 
-from foxlin.fox import FoxLin, Schema, BASIC_BOX
-from foxlin.box import CreateJsonDB, DBDump, JsonBox
+from foxlin.fox import FoxLin, Schema
 
-from main import BASE_DIR
+from config.settings import BASE_DIR
 
 
 @pytest.fixture(scope="session")
