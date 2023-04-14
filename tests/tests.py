@@ -21,7 +21,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table):
+def fake_data(table, count=10):
     faker = Faker()
     data = [
         table(
@@ -31,7 +31,7 @@ def fake_data(table):
             address=faker.address(),
             bio=faker.text(),
             age=random.randint(10, 80)
-        ) for number in range(10)
+        ) for number in range(count)
     ]
     return data
 
