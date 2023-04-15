@@ -38,7 +38,7 @@ def fake_data(table, count=10):
 
 class TestFoxLin:
     def dbms(self, table, fake_data):
-        path = os.path.join(BASE_DIR, 'tests/test.json')
+        path = os.path.join(BASE_DIR, 'tests/db.json')
         if os.path.exists(path):
             os.remove(path)
 
@@ -48,7 +48,7 @@ class TestFoxLin:
             fox_session.INSERT(*fake_data)
             fox_session.COMMIT()
             foxlin.load()
-            return list(fox_session.SELECT().get())
+            return list(fox_session.SELECT().all())
 
     def test_dbms_benchmark(self, benchmark, table, fake_data):
         func = self.dbms

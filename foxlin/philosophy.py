@@ -1,6 +1,6 @@
 from typing import List, Dict, Union, Callable, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel as BsMdl
 
 from .tog import TupleGraph
 
@@ -10,7 +10,7 @@ LEVEL = str
 DB_TYPE = Dict[COLUMN, TupleGraph]
 
 
-class BaseModel(BaseModel):
+class BaseModel(BsMdl):
     class Config:
         arbitrary_types_allowed = True
 
@@ -67,4 +67,4 @@ class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
 
     record: List[ID]
-      
+

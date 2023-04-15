@@ -37,8 +37,8 @@ class TupleGraph:
         if self.__grow: self._grow()
 
     def __resize(self, new_size: int):
-        self.k_array.resize(new_size)
-        self.v_array.resize(new_size)
+        self.k_array.resize(new_size, refcheck=False)
+        self.v_array.resize(new_size, refcheck=False)
 
     def _grow(self):
         chunck = self.__flag / self.k_array.size * 100
@@ -111,10 +111,11 @@ class TupleGraph:
 
     def __repr__(self):
         return str(tg_typer(self))
-    
+
     @property
     def flag(self):
         return self.__flag
+
 def tg_typer(obj):
     if isinstance(obj, TupleGraph):
         return {str(k):v for k,v in zip(obj.k_array, obj.v_array)}

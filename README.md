@@ -17,14 +17,16 @@ simple, fast, funny json dbms base on python
 
     class MyTable(schema): # define your teble schema
         name: str
+        age: int
         username: str
         password: str
 
     db = FoxLin('./db.json', MyTable)
 
     data = [
-        MyTable(name='sobhan', username='misano', password='#197382645#'),
-        MyTable(name='Tommy', username='god_of_war', password='123QWEasdZXC')
+        MyTable(name='brian', age=37, username='biran1999', password='123456789')
+        MyTable(name='sobhan', age=20, username='misano', password='#197382645#'),
+        MyTable(name='Tommy', age=15, ageusername='god_of_war', password='123QWEasdZXC')
     ]
 
     with db.session as db_session:
@@ -36,10 +38,11 @@ simple, fast, funny json dbms base on python
     db_session.INSERT(*data)
     db_session.COMMIT()
 
-    r_data = db_session.SELECT().WHERE('name','=','sobhan').get()
-    myrecord = r_data[0]
+    query = db_session.SELECT()
+    record = query.WHERE(query.age > 17).first()
+    
 
-    print(myrecord.name, myrecord.username, myrecord.password)
+    print(record.name, record.username, record.password)
 ```
 
 ##### TODO in 1.0
@@ -49,10 +52,10 @@ simple, fast, funny json dbms base on python
 - [x] session model
 - [x] transaction but by grouping commits **not ACDI**
 - [ ] write test
-- [ ] neo dict implemented by numpy
+- [x] neo dict implemented by numpy
 - [ ] add logs to .<database-name>.logs
 - [ ] genetate logs
-- [ ] quering
+- [x] quering
 
 ##### TODO at 1.1
 - asynchronus

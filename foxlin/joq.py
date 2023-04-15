@@ -6,19 +6,31 @@ using by: query = JsonQuery()
           query.<query_method_name>()
 """
 
-
+from numpy import where
+from random import choice
 
 class JsonQuery(object):
     def __init__(self, session):
         self.session = session
         self.records = []
+        self.__state = None
         self.reset()
 
     def reset(self):
         ID_column = self.session._db['ID']
         self.records = ID_column.values()[:ID_column.flag]
 
-    def get(self):
+    def first(self):
+        return self.session.get_by_id(self.records[0])
+
+    def end(self):
+        return self.session.get_by_id(self.records[-1])
+
+    def rand(self):
+        rand_id = choice(self.records)
+        return self.session.get_by_id(rand_id)
+
+    def all(self):
         for ID in self.records:
             yield self.session.get_by_id(ID)
         self.reset()
@@ -26,8 +38,8 @@ class JsonQuery(object):
     def SELECT(self, *args, **kwargs):
         return self
 
-    def WHERE(self, column, operator, value):
-        self.records = list(self.session._db[column].bvdata[value])
+    def WHERE(self, condition):
+        self.records = self.session._db[self.__state].k_array[where(condition)]
         return self
 
     def GROUP_BY(self, *args, **kwargs):
@@ -42,3 +54,10 @@ class JsonQuery(object):
     def LIMIT(self, n: int):
         self.records = self.records[:n]
         return self
+
+    def __getattribute__(self, name):
+        session = object.__getattribute__(self,'session')
+        if name in session._db.keys():
+            self.__state = name
+            return self.session._db[name].values()
+        return object.__getattribute__(self, name)
