@@ -48,8 +48,9 @@ class Den(object):
             return r
         return wrapper
 
-    def SELECT(self, *args, **kwargs):
-        return JsonQuery(self).SELECT(*args,**kwargs)
+    @property
+    def query(self):
+        return JsonQuery(self)
 
     def get_by_id(self, ID: str) -> Schema:
         record = {c:self._db[c][ID] for c in self._db.keys()}

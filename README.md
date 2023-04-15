@@ -38,7 +38,7 @@ simple, fast, funny json dbms base on python
     db_session.INSERT(*data)
     db_session.COMMIT()
 
-    query = db_session.SELECT()
+    query = db_session.query
     record = query.WHERE(query.age > 17).first()
     
 

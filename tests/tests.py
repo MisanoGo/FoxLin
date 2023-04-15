@@ -48,7 +48,9 @@ class TestFoxLin:
             fox_session.INSERT(*fake_data)
             fox_session.COMMIT()
             foxlin.load()
-            return list(fox_session.SELECT().all())
+
+            query = fox_session.query
+            return list(query.SELECT().all())
 
     def test_dbms_benchmark(self, benchmark, table, fake_data):
         func = self.dbms

@@ -31,6 +31,7 @@ class JsonQuery(object):
         return self.session.get_by_id(rand_id)
 
     def all(self):
+        # bug : after reload record 0 exists
         for ID in self.records:
             yield self.session.get_by_id(ID)
         self.reset()
