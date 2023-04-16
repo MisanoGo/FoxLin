@@ -4,7 +4,18 @@ from typing import Dict, Any, Iterable
 
 
 class TupleGraph:
+    """
+    TupleGraph is new implementation from dict data structure as graph
+    why graph ? because you can accsess from key to value and from value to key
 
+    >>> d = {'id':195, 'name':'tommy'}
+    >>> tg = TupleGraph(d)
+    >>> tg['name']
+    <<< 'tommy'
+    >>> tg[:195]
+    <<< 'id'
+
+    """
     def __init__(self, data: dict, space: int=8, default=None, grow: bool=True):
         self.k_array = np.empty(space, dtype=object)
         self.v_array = np.empty(space, dtype=object)
