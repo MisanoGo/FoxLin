@@ -22,6 +22,8 @@ class TupleGraph:
                 return self.__get_by_v(i.stop)
             elif i.start:
                 return self.__get_by_k(i.start)
+        elif type(i) is tuple:
+            return [self.__get_by_k(k) for k in i]
         else:
             return self.__get_by_k(i)
 
@@ -95,6 +97,9 @@ class TupleGraph:
         self.v_array.fill(self.default)
         self.__flag = 0
         self._grow()
+
+    def get(self, *key):
+        return self[key]
 
     def keys(self):
         return self.k_array

@@ -31,7 +31,6 @@ class JsonQuery(object):
         return self.session.get_by_id(rand_id)
 
     def all(self):
-        # bug : after reload record 0 exists
         for ID in self.records:
             yield self.session.get_by_id(ID)
         self.reset()
@@ -43,8 +42,10 @@ class JsonQuery(object):
         self.records = self.session._db[self.__state].k_array[where(condition)]
         return self
 
-    def ORDER_BY(self, order_column):
-        self.records = self.records[argsort(getattr(self, order_column)[:self.session._db['ID'].flag])]
+    def ORDER_BY(self, column):
+        recs = self.session._db[column].get(*self.records)
+        sorted_recs = argsort(recs)
+        self.records = self.records[sorted_recs]
         return self
 
     def GROUP_BY(self, *args, **kwargs):
