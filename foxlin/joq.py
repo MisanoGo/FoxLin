@@ -43,11 +43,11 @@ class JsonQuery(object):
         self.records = self.session._db[self.__state].k_array[where(condition)]
         return self
 
-    def GROUP_BY(self, *args, **kwargs):
+    def ORDER_BY(self, order_column):
+        self.records = self.records[argsort(getattr(self, order_column)[:self.session._db['ID'].flag])]
         return self
 
-    def ORDER_BY(self, order_column):
-        self.records = self.records[argsort(getattr(self, order_column)[:self.session._db['ID'].flag-1])]
+    def GROUP_BY(self, *args, **kwargs):
         return self
 
     def HAVING(self, *args, **kwargs):
@@ -61,5 +61,5 @@ class JsonQuery(object):
         session = object.__getattribute__(self,'session')
         if name in session._db.keys():
             self.__state = name
-            return self.session._db[name].values()
+            return self.session._db[name].values()[:self.session._db['ID'].flag]
         return object.__getattribute__(self, name)

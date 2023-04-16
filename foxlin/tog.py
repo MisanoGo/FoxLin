@@ -6,8 +6,8 @@ from typing import Dict, Any, Iterable
 class TupleGraph:
 
     def __init__(self, data: dict, space: int=8, default=None, grow: bool=True):
-        self.k_array = np.zeros(space, dtype=object)
-        self.v_array = np.zeros(space, dtype=object)
+        self.k_array = np.empty(space, dtype=object)
+        self.v_array = np.empty(space, dtype=object)
 
         self.default = default
         self.__flag = 0
@@ -110,7 +110,7 @@ class TupleGraph:
         tuple(map(lambda i: self.__setitem__(i[0],i[1]),data.items()))
 
     def __repr__(self):
-        return str(tg_typer(self))
+        return f"{self.__class__.__name__} : ({str(tg_typer(self))})"
 
     @property
     def flag(self):
@@ -118,4 +118,4 @@ class TupleGraph:
 
 def tg_typer(obj):
     if isinstance(obj, TupleGraph):
-        return {str(k):v for k,v in zip(obj.k_array, obj.v_array)}
+        return {str(k):v for k,v in zip(obj.k_array[:obj.flag], obj.v_array[:obj.flag])}
