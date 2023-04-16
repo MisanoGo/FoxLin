@@ -18,7 +18,7 @@ class JsonQuery(object):
 
     def reset(self):
         ID_column = self.session._db['ID']
-        self.records = copy(ID_column.values()[:ID_column.flag-1])
+        self.records = copy(ID_column.values()[:ID_column.flag])
 
     def first(self):
         return self.session.get_by_id(self.records[0])
