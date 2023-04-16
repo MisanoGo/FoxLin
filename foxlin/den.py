@@ -80,7 +80,7 @@ class Den(object):
         self._commit_list = self._commit_point[savepoint] if savepoint else []
         if savepoint : self._commit_point.pop(savepoint)
 
-    def SAVEPOINT(self name: str):
+    def SAVEPOINT(self, name: str):
         self._commit_point[name] = self._commit_list
         self.ROLLBACK()
 
