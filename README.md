@@ -39,8 +39,7 @@ simple, fast, funny json dbms base on python
     db_session.COMMIT()
 
     query = db_session.query
-    record = query.WHERE(query.age > 17).first()
-    
+    record = query.WHERE(query.age > 17).ORDER_BY('age').first()
 
     print(record.name, record.username, record.password)
 ```
@@ -53,11 +52,12 @@ simple, fast, funny json dbms base on python
 - [x] transaction but by grouping commits **not ACDI**
 - [ ] write test
 - [x] neo dict implemented by numpy
-- [ ] add logs to .<database-name>.logs
+- [x] add logs to .logs file
+- [ ] define logs in operation statment and able to setting by user
 - [ ] genetate logs
 - [x] quering
 
 ##### TODO at 1.1
 - asynchronus
 - transaction ACDI
-
+- define Group By & HAVING
