@@ -1,4 +1,4 @@
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, Optional
 from contextlib import contextmanager
 import functools
 
@@ -68,7 +68,7 @@ class Den(object):
     def DELETE(self, *ID: int) -> DBDelete:
         return DBDelete(record=ID)
 
-    def COMMIT(self, savepoint: str = None):
+    def COMMIT(self, savepoint: Optional[str] = None):
         if savepoint:
             self._commiter(self._commit_point[savepoint])
             self._commit_point.pop(savepoint)
@@ -76,16 +76,16 @@ class Den(object):
             self._commiter(self._commit_list)
         self.ROLLBACK()
 
-    def ROLLBACK(self, savepoint: str = None):
+    def ROLLBACK(self, savepoint: Optional[str] = None):
         self._commit_list = self._commit_point[savepoint] if savepoint else []
         if savepoint : self._commit_point.pop(savepoint)
 
-    def SAVEPOINT(self, name: str):
+    def SAVEPOINT(self name: str):
         self._commit_point[name] = self._commit_list
         self.ROLLBACK()
 
 
-    def discard(self, op:DBOperation = None):
+    def discard(self, op: Optional[DBOperation] = None):
         # remove specified operation or last operation in commit list
         if op : self._commit_list.remove(op)
         else: self._commit_list.pop()
