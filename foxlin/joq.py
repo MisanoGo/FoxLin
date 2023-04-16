@@ -6,7 +6,7 @@ using by: query = JsonQuery()
           query.<query_method_name>()
 """
 
-from numpy import where
+from numpy import where, argsort, copy
 from random import choice
 
 class JsonQuery(object):
@@ -18,7 +18,7 @@ class JsonQuery(object):
 
     def reset(self):
         ID_column = self.session._db['ID']
-        self.records = ID_column.values()[:ID_column.flag]
+        self.records = copy(ID_column.values()[:ID_column.flag-1])
 
     def first(self):
         return self.session.get_by_id(self.records[0])
@@ -46,7 +46,8 @@ class JsonQuery(object):
     def GROUP_BY(self, *args, **kwargs):
         return self
 
-    def ORDER_BY(self, *args, **kwargs):
+    def ORDER_BY(self, order_column):
+        self.records = self.records[argsort(getattr(self, order_column)[:self.session._db['ID'].flag-1])]
         return self
 
     def HAVING(self, *args, **kwargs):
