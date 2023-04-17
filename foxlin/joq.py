@@ -9,6 +9,8 @@ using by: query = JsonQuery()
 from numpy import where, argsort, copy
 from random import choice
 
+from .utils import get_attr
+
 class JsonQuery(object):
     def __init__(self, session):
         self.session = session
@@ -49,9 +51,11 @@ class JsonQuery(object):
         return self
 
     def GROUP_BY(self, *args, **kwargs):
+        # TODO in 1.1
         return self
 
     def HAVING(self, *args, **kwargs):
+        # TODO in 1.1
         return self
 
     def LIMIT(self, n: int):
@@ -59,8 +63,8 @@ class JsonQuery(object):
         return self
 
     def __getattribute__(self, name):
-        session = object.__getattribute__(self,'session')
+        session = get_attr(self,'session')
         if name in session._db.keys():
             self.__state = name
             return self.session._db[name].values()[:self.session._db['ID'].flag]
-        return object.__getattribute__(self, name)
+        return get_attr(self, name)
