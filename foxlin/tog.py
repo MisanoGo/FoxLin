@@ -39,7 +39,6 @@ class TupleGraph:
             return self.__get_by_k(i)
 
     def __setitem__(self, k, v):
-        exist = k in self
         if type(k) is slice:
             pass
         elif type(k) is Iterable:
@@ -47,8 +46,6 @@ class TupleGraph:
         else :
             self.__set_i(k, v)
 
-        if not exist: self.__flag += 1
-        if self.__grow: self._grow()
 
     def __resize(self, new_size: int):
         self.k_array.resize(new_size, refcheck=False)
@@ -62,11 +59,18 @@ class TupleGraph:
             self.__resize(new_size)
 
     def __set_i(self, k, v):
-        self.k_array[self.__flag]= k
-        self.v_array[self.__flag]= v
+        k_exist = k in self
+        v_exist = v in self.v_array
+        flag = self.__flag
+        self.k_array[flag]= k
+        self.v_array[flag]= v
+        
+        self.relation['k'][hash(k)] = flag
+        flag = [flag, *self.relation['v'][hash(v)]] if v_exist else [flag]
+        self.relation['v'][hash(v)] = flag
 
-        self.relation['k'][hash(k)] = self.__flag
-        self.relation['v'][hash(v)] = self.__flag
+        if not k_exist: self.__flag += 1
+        if self.__grow: self._grow()
 
     def __get_by_i(self, p, i):
         return self.relation[p][hash(i)]
