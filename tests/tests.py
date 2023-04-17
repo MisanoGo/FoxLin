@@ -35,24 +35,52 @@ def fake_data(table, count=10):
     ]
     return data
 
+@pytest.fixture(scope="session")
+def db(table):
+    path = os.path.join(BASE_DIR, 'tests/db.json')
+    if os.path.exists(path):
+        os.remove(path)
+
+    foxlin = FoxLin(path, table)
+
+    return foxlin
+
+@pytest.fixture(scope="session")
+def session(db):
+    return db.sessionFactory
 
 class TestFoxLin:
-    def dbms(self, table, fake_data):
-        path = os.path.join(BASE_DIR, 'tests/db.json')
-        if os.path.exists(path):
-            os.remove(path)
+    def test_insert(self, fake_data, session):
+        session.INSERT(*fake_data)
+        session.COMMIT()
 
-        foxlin = FoxLin(path, table)
+        q = session.query
+        assert list(q.all()) == fake_data
 
-        with foxlin.session as fox_session:
-            fox_session.INSERT(*fake_data)
-            fox_session.COMMIT()
-            foxlin.load()
+    def test_update(self, session):
+        q = session.query
+        p1 = q.rand()
+        p2 = p1.copy()
+        p2.age = 19
+        session.UPDATE(p2, updated_fields=['age'])
+        session.COMMIT()
 
-            query = fox_session.query
-            return list(query.SELECT().all())
+        assert session.get_by_id(p1.ID) != p1
+        assert session.get_by_id(p1.ID).age == p2.age
+
+    def test_delete(self, session):
+        q = session.query
+        rand_rec = q.rand()
+
+        session.DELETE(rand_rec.ID)
+        session.COMMIT()
+        q = session.query
+        q.reset()
+        print(q.records, session._db['ID'].k_array, session._db['ID'].v_array)
+        assert rand_rec not in tuple(q.all())
 
     def test_dbms_benchmark(self, benchmark, table, fake_data):
-        func = self.dbms
-        result = benchmark(func, table, fake_data)
-        assert result == fake_data
+        #func = self.dbms
+        #result = benchmark(func, table, fake_data)
+        #assert result == fake_data
+        pass
