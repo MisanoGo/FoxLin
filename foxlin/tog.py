@@ -39,6 +39,7 @@ class TupleGraph:
             return self.__get_by_k(i)
 
     def __setitem__(self, k, v):
+        exist = k in self
         if type(k) is slice:
             pass
         elif type(k) is Iterable:
@@ -46,7 +47,7 @@ class TupleGraph:
         else :
             self.__set_i(k, v)
 
-        self.__flag += 1
+        if not exist: self.__flag += 1
         if self.__grow: self._grow()
 
     def __resize(self, new_size: int):
@@ -134,4 +135,12 @@ class TupleGraph:
 
 def tg_typer(obj):
     if isinstance(obj, TupleGraph):
-        return {str(k):v for k,v in zip(obj.k_array[:obj.flag], obj.v_array[:obj.flag])}
+        data = {str(k):v
+                for k,v in zip(obj.k_array[:obj.flag],
+                               obj.v_array[:obj.flag])}
+        if '0' in data:
+            data.pop('0')
+        if 'None' in data:
+            data.pop('None')
+        return data
+
