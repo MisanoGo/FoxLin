@@ -61,3 +61,6 @@ simple, fast, funny json dbms base on python
 - asynchronus
 - transaction ACDI
 - define Group By & HAVING
+- log operation's time duration
+- migrate
+- ...
