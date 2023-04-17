@@ -20,7 +20,8 @@ class JsonQuery(object):
 
     def reset(self):
         ID_column = self.session._db['ID']
-        self.records = copy(ID_column.values()[:ID_column.flag])
+        x = list(ID_column.relation['k'].values()) # only get exists index's not None or 0 as Deleted
+        self.records = copy(ID_column.values()[x])
 
     def first(self):
         return self.session.get_by_id(self.records[0])

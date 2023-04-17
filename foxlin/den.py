@@ -62,11 +62,11 @@ class Den(object):
 
     @_commitRecorder
     def UPDATE(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
-        return DBUpdate(record=s, updated_fields=updated_fields)
+        return DBUpdate(record=s, updated_fields=updated_fields, db=self._db)
 
     @_commitRecorder
     def DELETE(self, *ID: int) -> DBDelete:
-        return DBDelete(record=ID)
+        return DBDelete(record=ID, db=self._db)
 
     def COMMIT(self, savepoint: Optional[str] = None):
         if savepoint:

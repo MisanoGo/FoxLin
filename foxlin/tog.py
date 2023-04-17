@@ -123,7 +123,7 @@ class TupleGraph:
         return set(zip(self.keys, self.values))
 
     def update(self, data: dict):
-        # BUG : same update set up flag
+        # BUG : same update set up flag : solved
         tuple(map(lambda i: self.__setitem__(i[0],i[1]),data.items()))
 
     def __repr__(self):
