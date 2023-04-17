@@ -23,7 +23,7 @@ class Den(object):
     Den records operations on database and over then commited,
     commit list will send to Foxlin for real operate
 
-   oriented by SQL DML,TCL,DQL logic
+    oriented by SQL DML,TCL,DQL logic
 
     """
     def __init__(self,
@@ -63,8 +63,12 @@ class Den(object):
         return DBCreate(record=s, db=self._db)
 
     @_commitRecorder
+    def READ(self, **kwargs):
+        return DBRead(**kwargs, session=self)
+
+    @_commitRecorder
     def UPDATE(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
-        return DBUpdate(record=s, updated_fields=updated_fields, db=self._db)
+        return DBUpdate(record=s, update=updated_fields, db=self._db)
 
     @_commitRecorder
     def DELETE(self, *ID: int) -> DBDelete:

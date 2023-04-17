@@ -1,8 +1,9 @@
-from typing import List, Dict, Union, Callable, Any
+from typing import List, Dict, Union, Callable
 
 from pydantic import BaseModel as BsMdl
 
 from .tog import TupleGraph
+#from .den import Den
 
 ID = str
 COLUMN = str
@@ -38,8 +39,8 @@ class DBOperation(BaseModel):
     we use DBOperation to transfer operation between levels
     """
     op_name: str
-    callback: Callable = None
-    callback_level: LEVEL = None  # that level callback can call
+    callback: Callable | None = None
+    callback_level: LEVEL | None= None  # that level callback can call
 
     levels: List[LEVEL] = ['log']
     logs: List[Log] = []
@@ -56,11 +57,20 @@ class DBCreate(CRUDOperation):
 
 class DBRead(CRUDOperation):
     op_name: str = "READ"
+    session: object
+    raw: bool = False
+
+    select: List[COLUMN] | None = None
+    limit: int | None = None
+    where: List[tuple] | None = None
+    order: str | None = None
+    record: List[Schema] | None = None
+    # TODO in 1.1 group & having
 
 
 class DBUpdate(CRUDOperation):
     op_name: str = "UPDATE"
-    updated_fields: List[str]
+    update: List[COLUMN]
 
 
 class DBDelete(CRUDOperation):

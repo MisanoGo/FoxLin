@@ -14,6 +14,7 @@ from .utils import get_attr
 
 class JsonQuery(object):
     def __init__(self, session):
+        # TODO : set def inputs
         self.session = session
         self.records = []
         self.selected_col = set()

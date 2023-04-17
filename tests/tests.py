@@ -57,6 +57,27 @@ class TestFoxLin:
         q = session.query
         assert list(q.all()) == fake_data
 
+    def test_read(self, session):
+        q = session.query
+        q.raw = True
+        rec = q.SELECT('name','age','ID') \
+               .ORDER_BY('age')\
+               .LIMIT(5)\
+               .all()
+
+        def _(obj):
+            assert list(rec) == list(obj.record)
+
+        session.READ(
+            callback = _,
+            callback_level = 'memory',
+            raw = True,
+            select= ['name','age','ID'],
+            limit = 5,
+            order = 'age'
+        )
+        session.COMMIT()
+
     def test_update(self, session):
         q = session.query
         p1 = q.rand()

@@ -26,6 +26,7 @@ from .philosophy import (
 )
 
 from .tog import TupleGraph, tg_typer
+from .joq import JsonQuery
 from .utils import getStructher, getKeyList
 
 
@@ -58,13 +59,19 @@ class MemBox(FoxBox):
 
 
     def read_op(self, obj: DBRead):
-        pass
+        q: JsonQuery = obj.session.query
+        q.raw = obj.raw
+        obj.record = q.SELECT(*obj.select)\
+                      .ORDER_BY(obj.order)\
+                      .LIMIT(obj.limit)\
+                      .all()
+        # TODO
 
     def update_op(self, obj: DBUpdate):
         for record in obj.record:
             raw_data = record.dict()
             ID = record.ID
-            list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.updated_fields))
+            list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.update))
 
     def delete_op(self, obj: DBUpdate):
         for ID in obj.record:
