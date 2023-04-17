@@ -15,6 +15,7 @@ class JsonQuery(object):
     def __init__(self, session):
         self.session = session
         self.records = []
+        self.selected_col = set()
         self.__state = None
         self.reset()
 
@@ -22,23 +23,28 @@ class JsonQuery(object):
         ID_column = self.session._db['ID']
         x = list(ID_column.relation['k'].values()) # only get exists index's not None or 0 as Deleted
         self.records = copy(ID_column.values()[x])
+        #self.selected_col = set()
+
+    def get(self, ID: str):
+        return self.session.get_by_id(ID, self.selected_col)
 
     def first(self):
-        return self.session.get_by_id(self.records[0])
+        return self.get(self.records[0])
 
     def end(self):
-        return self.session.get_by_id(self.records[-1])
+        return self.get(self.records[-1])
 
     def rand(self):
         rand_id = choice(self.records)
-        return self.session.get_by_id(rand_id)
+        return self.get(rand_id)
 
     def all(self):
         for ID in self.records:
-            yield self.session.get_by_id(ID)
+            yield self.get(ID)
         self.reset()
 
-    def SELECT(self, *args, **kwargs):
+    def SELECT(self,*column):
+        self.selected_col = set(column)
         return self
 
     def WHERE(self, condition):

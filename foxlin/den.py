@@ -52,9 +52,10 @@ class Den(object):
     def query(self):
         return JsonQuery(self)
 
-    def get_by_id(self, ID: str) -> Schema:
-        record = {c:self._db[c][ID] for c in self._db.keys()}
-        return self._schema(**record)
+    def get_by_id(self, ID: str, columns=None) -> Schema:
+        columns = columns if columns else self._db.keys()
+        record = {c:self._db[c][ID] for c in columns}
+        return self._schema.construct(**record)
 
     @_commitRecorder
     def INSERT(self, *s: Schema) -> DBCreate:
