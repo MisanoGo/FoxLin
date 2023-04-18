@@ -65,7 +65,7 @@ class MemBox(FoxBox):
                       .ORDER_BY(obj.order)\
                       .LIMIT(obj.limit)\
                       .all()
-        # TODO
+        # TODO in 1.1
 
     def update_op(self, obj: DBUpdate):
         for record in obj.record:
