@@ -42,11 +42,14 @@ class Den(object):
     def _commitRecorder(f) -> Callable:
         @functools.wraps(f)
         def wrapper(self, *args, **kwargs):
-            r = f(self, *args, **kwargs)
-            if isinstance(r, CRUDOperation):
-                self._commit_list.append(r)
-            return r
+            robj = f(self, *args, **kwargs)
+            if isinstance(robj, CRUDOperation):
+                self._add_op(robj)
+            return robj
         return wrapper
+
+    def _add_op(self, obj):
+        self._commit_list.append(obj)
 
     @property
     def query(self):
