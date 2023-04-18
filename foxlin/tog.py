@@ -27,10 +27,10 @@ class TupleGraph:
 
         self.uniqe = uniqe
         self.default = default
-        
-        self.__flag = 0
         self.relation: Dict[str,Dict[int,Any]] = {'k':{},
                                                   'v':{}}
+        self.__flag = 0
+
         self.update(data)
 
     def __getitem__(self, i):

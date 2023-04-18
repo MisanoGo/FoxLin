@@ -63,4 +63,5 @@ simple, fast, funny json dbms base on python
 - define Group By & HAVING
 - log operation's time duration
 - migrate
+- session privilege's
 - ...
