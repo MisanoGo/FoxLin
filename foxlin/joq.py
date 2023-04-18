@@ -6,10 +6,12 @@ using by: query = JsonQuery()
           query.<query_method_name>()
 """
 from typing_extensions import Self
+from typing import Generator
 
 from numpy import where, argsort, copy
 from random import choice
 
+from .philosophy import DBRead
 from .utils import get_attr
 
 class JsonQuery(object):
@@ -19,7 +21,6 @@ class JsonQuery(object):
         self.records = []
         self.selected_col = set()
         self.raw = False
-        self.__state = None
 
         self.reset()
 
@@ -27,7 +28,7 @@ class JsonQuery(object):
         ID_column = self.session._db['ID']
         x = list(ID_column.relation['k'].values()) # only get exists index's not None or 0 as Deleted
         self.records = copy(ID_column.values()[x])
-        #self.selected_col = set()
+        self.selected_col = set()
 
     def get(self, ID: str):
         return self.session.get_by_id(ID, self.selected_col, self.raw)
@@ -42,17 +43,16 @@ class JsonQuery(object):
         rand_id = choice(self.records)
         return self.get(rand_id)
 
-    def all(self):
+    def all(self) -> Generator:
         for ID in self.records:
             yield self.get(ID)
-        self.reset()
 
     def SELECT(self,*column) -> Self:
         self.selected_col = set(column)
         return self
 
     def WHERE(self, condition) -> Self:
-        self.records = self.session._db[self.__state].k_array[where(condition)]
+        self.records = self.records[where(condition)]
         return self
 
     def ORDER_BY(self, column) -> Self:
@@ -74,8 +74,10 @@ class JsonQuery(object):
         return self
 
     def __getattribute__(self, name):
-        session = get_attr(self,'session')
-        if name in session._db.keys():
-            self.__state = name
-            return self.session._db[name].values()[:self.session._db['ID'].flag]
-        return get_attr(self, name)
+        try:
+            return get_attr(self, name)
+        except:
+            _db = self.session._db
+            assert name in _db.keys() # TODO : set exception
+            return _db[name].values()[:_db['ID'].flag]
+
