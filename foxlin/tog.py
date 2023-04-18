@@ -1,12 +1,14 @@
 import numpy as np
 
-from typing import Dict, Any, Iterable
+from typing import List, Dict, Any, Iterable, Hashable, Tuple
+
 
 
 class TupleGraph:
     """
     TupleGraph is new implementation from dict data structure as graph
     why graph ? because you can accsess from key to value and from value to key
+    k,v must be Hashable & whene v be list it will convert to tuple
 
     >>> d = {'id':195, 'name':'tommy'}
     >>> tg = TupleGraph(d)
@@ -15,14 +17,18 @@ class TupleGraph:
     >>> tg[:195]
     <<< 'id'
 
+    >>> tg = TupleGraph(d, uniqe=True)
+    <<< tg['username'] = 'tommy' # raise error
+
     """
-    def __init__(self, data: dict, space: int=8, default=None, grow: bool=True):
+    def __init__(self, data: dict = None, space: int=8, default=None, uniqe: bool=False):
         self.k_array = np.empty(space, dtype=object)
         self.v_array = np.empty(space, dtype=object)
 
+        self.uniqe = uniqe
         self.default = default
+        
         self.__flag = 0
-        self.__grow = grow
         self.relation: Dict[str,Dict[int,Any]] = {'k':{},
                                                   'v':{}}
         self.update(data)
@@ -38,7 +44,9 @@ class TupleGraph:
         else:
             return self.__get_by_k(i)
 
-    def __setitem__(self, k, v):
+    def __setitem__(self, k: Hashable, v: Hashable):
+        if type(v) is list:
+            v = tuple(v)
         if type(k) is slice:
             pass
         elif type(k) is Iterable:
@@ -61,18 +69,22 @@ class TupleGraph:
     def __set_i(self, k, v):
         k_exist = k in self
         v_exist = v in self.v_array
+        if self.uniqe:
+            if v_exist :
+                raise Exception # split def 
         flag = self.__flag
         self.k_array[flag]= k
         self.v_array[flag]= v
         
         self.relation['k'][hash(k)] = flag
-        flag = [flag, *self.relation['v'][hash(v)]] if v_exist else [flag]
+        if not self.uniqe:
+            flag: List[int] = [flag,*self.relation['v'][hash(v)]] if v_exist else [flag]
         self.relation['v'][hash(v)] = flag
 
         if not k_exist: self.__flag += 1
-        if self.__grow: self._grow()
+        self._grow()
 
-    def __get_by_i(self, p, i):
+    def __get_by_i(self, p, i) -> int | List[int]:
         return self.relation[p][hash(i)]
 
     def __get_by_k(self, k):
@@ -83,7 +95,7 @@ class TupleGraph:
         flag = self.__get_by_i('v', v)
         return self.k_array[flag]
 
-    def __contains__(self, key):
+    def __contains__(self, key) -> bool:
         return key in self.k_array
 
 
@@ -109,12 +121,12 @@ class TupleGraph:
     def clear(self):
         self.relation = {'k':{},
                          'v':{}}
-        self.k_array.fill(0)
+        self.k_array.fill(None)
         self.v_array.fill(self.default)
         self.__flag = 0
         self._grow()
 
-    def get(self, *key):
+    def get(self, *key) -> Hashable:
         return self[key]
 
     def keys(self):
@@ -123,11 +135,10 @@ class TupleGraph:
     def values(self):
         return self.v_array
 
-    def items(self):
-        return set(zip(self.keys, self.values))
+    def items(self) -> List[Tuple[Hashable, Hashable]]:
+        return tg_typer(self).items()
 
-    def update(self, data: dict):
-        # BUG : same update set up flag : solved
+    def update(self, data: Dict[Hashable, Hashable]):
         tuple(map(lambda i: self.__setitem__(i[0],i[1]),data.items()))
 
     def __repr__(self):
@@ -137,8 +148,8 @@ class TupleGraph:
     def flag(self):
         return self.__flag
 
-def tg_typer(obj):
-    if isinstance(obj, TupleGraph):
+def tg_typer(obj) -> Dict | None:
+    if isinstance(obj, TupleGraph) :
         data = {str(k):v
                 for k,v in zip(obj.k_array[:obj.flag],
                                obj.v_array[:obj.flag])}

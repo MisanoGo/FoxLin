@@ -24,7 +24,7 @@ class Schema(BaseModel):
 
 
 class DBCarrier(BaseModel):
-    db: DB_TYPE = None
+    db: DB_TYPE | None = None
 
 
 class Log(BaseModel):

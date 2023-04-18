@@ -83,7 +83,7 @@ class MemBox(FoxBox):
 class JsonDBOP(DBOperation):
     path: str
     levels: List[LEVEL] = ['jsonfile', 'log']
-    structure: Schema = None
+    structure: Schema | None = None
 
 
 class CreateJsonDB(JsonDBOP):
@@ -106,19 +106,20 @@ class JsonBox(FoxBox):
     file_type = '.json'
     level: str = 'jsonfile'
 
-    def _validate(self, db, schema) -> bool:
+    def _validate(self, db: DB_TYPE, schema: Schema) -> bool:
         scl: List[str] = getKeyList(schema)  # get user definate Schema column list
         dcl: List[str] = db.keys()  # get raw database column
         return scl == dcl  # validate database columns with schema columns
 
-    def _translate(self, data: DB_TYPE):
+    def _translate(self, data: Dict) -> DB_TYPE:
         data_n = {c: TupleGraph(r) for c, r in data.items()}
         return data_n
 
-    def _load(self, path: str, schema: Schema):
+    def _load(self, path: str, schema: Schema) -> DB_TYPE:
         with open(path, 'r') as file:
-            db = self._translate(orjson.loads(file.read())['db'])
-            if self._validate(db, schema):
+            data = orjson.loads(file.read())['db']
+            if self._validate(data, schema):
+                db = self._translate(data)
                 return db
         raise ValueError
 
