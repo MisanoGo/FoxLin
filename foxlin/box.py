@@ -57,7 +57,6 @@ class MemBox(FoxBox):
             ID = record.ID
             list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.db.keys()))
 
-
     def read_op(self, obj: DBRead):
         q: JsonQuery = obj.session.query
         q.raw = obj.raw

@@ -50,7 +50,8 @@ simple, fast, funny json dbms base on python
 - [x] self log system
 - [x] session model
 - [x] transaction but by grouping commits **not ACDI**
-- [ ] write test
+- [x] write test
+- [ ] benchmart test
 - [x] neo dict implemented by numpy
 - [x] add logs to .logs file
 - [ ] define logs in operation statment and able to setting by user

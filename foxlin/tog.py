@@ -3,7 +3,6 @@ import numpy as np
 from typing import List, Dict, Any, Iterable, Hashable, Tuple
 
 
-
 class TupleGraph:
     """
     TupleGraph is new implementation from dict data structure as graph
@@ -139,6 +138,7 @@ class TupleGraph:
         return tg_typer(self).items()
 
     def update(self, data: Dict[Hashable, Hashable]):
+        # TODO : do best practice
         tuple(map(lambda i: self.__setitem__(i[0],i[1]),data.items()))
 
     def __repr__(self):

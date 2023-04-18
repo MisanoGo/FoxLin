@@ -8,7 +8,7 @@ using by: query = JsonQuery()
 from typing_extensions import Self
 from typing import Generator
 
-from numpy import where, argsort, copy
+from numpy import where, argsort, copy, array
 from random import choice
 
 from .philosophy import DBRead
@@ -16,7 +16,6 @@ from .utils import get_attr
 
 class JsonQuery(object):
     def __init__(self, session):
-        # TODO : set def inputs
         self.session = session
         self.records = []
         self.selected_col = set()
@@ -24,10 +23,15 @@ class JsonQuery(object):
 
         self.reset()
 
-    def reset(self):
+    @property
+    def __get_records(self):
         ID_column = self.session._db['ID']
         x = list(ID_column.relation['k'].values()) # only get exists index's not None or 0 as Deleted
-        self.records = copy(ID_column.values()[x])
+        return copy(ID_column.values()[x])
+
+
+    def reset(self):
+        self.records = self.__get_records
         self.selected_col = set()
 
     def get(self, ID: str):
@@ -46,19 +50,24 @@ class JsonQuery(object):
     def all(self) -> Generator:
         for ID in self.records:
             yield self.get(ID)
+        self.reset()
 
     def SELECT(self,*column) -> Self:
         self.selected_col = set(column)
         return self
 
-    def WHERE(self, condition) -> Self:
-        self.records = self.records[where(condition)]
+    def WHERE(self, *condition) -> Self:
+        recset = set(self.records)
+        recs = self.__get_records
+        for con in condition:
+            recset = recset & set(recs[where(con)])
+        self.records = array(list(recset))
         return self
 
     def ORDER_BY(self, column) -> Self:
         recs = self.session._db[column].get(*self.records)
-        sorted_recs = argsort(recs)
-        self.records = self.records[sorted_recs]
+        sorted_recs_index = argsort(recs)
+        self.records = self.records[sorted_recs_index]
         return self
 
     def GROUP_BY(self, *args, **kwargs) -> Self:
@@ -72,6 +81,21 @@ class JsonQuery(object):
     def LIMIT(self, n: int) -> Self:
         self.records = self.records[:n]
         return self
+
+    def COUNT(self):
+        return len(self.records)
+
+    def rad(self, **columns): # right access data
+        for k,v in columns.items():
+            c = getattr(self, k)
+            self.WHERE(c == v)
+        d = self.first()
+        self.reset()
+        return d
+
+    def liner(self, **columns):
+        # liner search TODO in 1.2
+        pass
 
     def __getattribute__(self, name):
         try:
