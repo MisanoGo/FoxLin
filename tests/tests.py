@@ -4,7 +4,7 @@ import os
 
 from faker import Faker
 
-from foxlin.fox import FoxLin, Schema
+from foxlin import FoxLin, Schema, Column
 
 from config.settings import BASE_DIR
 
@@ -12,11 +12,11 @@ from config.settings import BASE_DIR
 @pytest.fixture(scope="session")
 def table():
     class Person(Schema):
-        name: str
-        family: str
-        address: str
-        bio: str
-        age: int
+        name: str = Column()
+        family: str = Column()
+        address: str = Column()
+        bio: str = Column()
+        age: int = Column()
     return Person
 
 

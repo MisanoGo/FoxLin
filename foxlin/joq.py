@@ -8,10 +8,9 @@ using by: query = JsonQuery()
 from typing_extensions import Self
 from typing import Generator
 
-from numpy import where, argsort, copy, array
+from numpy import where, argsort, array
 from random import choice
 
-from .philosophy import DBRead
 from .utils import get_attr
 
 class JsonQuery(object):
@@ -25,16 +24,15 @@ class JsonQuery(object):
 
     @property
     def __get_records(self):
-        ID_column = self.session._db['ID']
-        x = list(ID_column.relation['k'].values()) # only get exists index's not None or 0 as Deleted
-        return copy(ID_column.values()[x])
+        IDc = self.session._db.ID
+        return IDc.data[:IDc.flag].copy()
 
 
     def reset(self):
         self.records = self.__get_records
         self.selected_col = set()
 
-    def get(self, ID: str):
+    def get(self, ID: int):
         return self.session.get_by_id(ID, self.selected_col, self.raw)
 
     def first(self):
@@ -102,6 +100,6 @@ class JsonQuery(object):
             return get_attr(self, name)
         except:
             _db = self.session._db
-            assert name in _db.keys() # TODO : set exception
-            return _db[name].values()[:_db['ID'].flag]
+            assert name in _db.columns # TODO : set exception
+            return _db[name].ldata
 

@@ -31,6 +31,7 @@ class FoxLin(BoxManager, DenManager):
 
         self.path = path
         self.schema = schema
+        self._db = self.schema()
 
         super(FoxLin, self).__init__(*box)
         if auto_setup : self.auto_setup()

@@ -1,31 +1,83 @@
 from typing import List, Dict, Union, Callable
 
 from pydantic import BaseModel as BsMdl
+from numpy import ndarray, array, log2
 
-from .tog import TupleGraph
+from .utils import get_attr
 #from .den import Den
+
 
 ID = str
 COLUMN = str
 LEVEL = str
-DB_TYPE = Dict[COLUMN, TupleGraph]
-
 
 class BaseModel(BsMdl):
     class Config:
         arbitrary_types_allowed = True
 
+class Column:
+    def __init__(self, data = []):
+        self.data = array(data, dtype=object)
+        flag = len(data)
+        if flag == 0 : 
+            self.__resize(8)
+        
+        self.flag = len(self.data) if flag else len(data)
+        self.__grow()
+
+        #if self.right :
+        #    self.relation = {}
+ 
+    def __grow(self):
+        chunck = self.flag / self.data.size * 100
+        change = -1 if chunck < 35 else +1 if chunck > 90 else 0
+        if change:
+            new_size = int(2**(log2(self.data.size) + change))
+            self.__resize(new_size)
+
+    def append(self, v):
+        self[self.flag] = v
+
+    def update(self, i, v):
+        self[i] = v
+
+    def pop(self, i):
+        self.data.pop(i)
+
+    def __resize(self, size):
+        self.data.resize(size, refcheck=False)
+
+    def __getitem__(self, i):
+        return self.data[:self.flag][i]
+
+    def __setitem__(self, k, v):
+        self.data[k] = v
+        if k >= self.flag : self.flag += 1
+        self.__grow()
+
+    def __iter__(self):
+        return iter(self.ldata)
 
 class Schema(BaseModel):
     """
-    databaser schema aliaser & also record carrier
+    databaser schema aliaser & also record container
     """
-    ID: str | None = None
 
+    def __getitem__(self, i):
+        return get_attr(self, i)
+
+    def __setitem__(self, name, value):
+        setattr(self, name, value)
+
+    @property
+    def columns(self):
+        return list(self.__dict__.keys())
+
+
+DB_TYPE = Schema
 
 class DBCarrier(BaseModel):
     db: DB_TYPE | None = None
-
 
 class Log(BaseModel):
     box_level: str

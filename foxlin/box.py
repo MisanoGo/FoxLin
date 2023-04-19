@@ -1,5 +1,6 @@
 import os
 import orjson
+from numpy import array
 
 from typing import (
     Callable,
@@ -17,6 +18,7 @@ from .philosophy import (
     DBDelete,
 
     Schema,
+    Column,
     DBCarrier,
 
     Log,
@@ -25,7 +27,6 @@ from .philosophy import (
     DB_TYPE
 )
 
-from .tog import TupleGraph, tg_typer
 from .joq import JsonQuery
 from .utils import getStructher, getKeyList
 
@@ -52,10 +53,14 @@ class MemBox(FoxBox):
     level: str = 'memory'
 
     def create_op(self, obj: DBCreate):
+        db = obj.db
+        columns = db.columns[1:] # except ID column
+
         for record in obj.record:
             raw_data = record.dict()
-            ID = record.ID
-            list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.db.keys()))
+            db.ID.append(db.ID.flag)
+            list(map(lambda c: db[c].append(raw_data[c]),columns))
+
 
     def read_op(self, obj: DBRead):
         q: JsonQuery = obj.session.query
@@ -70,13 +75,12 @@ class MemBox(FoxBox):
         for record in obj.record:
             raw_data = record.dict()
             ID = record.ID
-            list(map(lambda c:obj.db[c].update({ID:raw_data[c]}),obj.update))
+            list(map(lambda c:obj.db[c].update(ID,raw_data[c]), obj.update))
 
     def delete_op(self, obj: DBUpdate):
         for ID in obj.record:
-            list(map(lambda c:obj.db[c].pop(ID),obj.db.keys()))
-    
-    __slots__ = ('_create_op','_level')
+            list(map(lambda c:obj.db[c].pop(ID), obj.db.columns))
+    #__slots__ = ('_create_op','_level')
 
 
 class JsonDBOP(DBOperation):
@@ -84,14 +88,14 @@ class JsonDBOP(DBOperation):
     levels: List[LEVEL] = ['jsonfile', 'log']
     structure: Schema | None = None
 
+    # TODO : validate path exists with pydantic validator
+
 
 class CreateJsonDB(JsonDBOP):
     op_name: str = "create_database"
 
-
 class DBLoad(DBCarrier, JsonDBOP):
     op_name = 'LOAD'
-
 
 class DBDump(DBCarrier, JsonDBOP):
     op_name = 'DUMP'
@@ -105,39 +109,51 @@ class JsonBox(FoxBox):
     file_type = '.json'
     level: str = 'jsonfile'
 
-    def _validate(self, db: DB_TYPE, schema: Schema) -> bool:
-        scl: List[str] = getKeyList(schema)  # get user definate Schema column list
-        dcl: List[str] = db.keys()  # get raw database column
+    def _validate(self, data: dict, schema: Schema) -> bool:
+        scl: List[str] = schema.columns  # get user definate Schema column list
+        dcl: List[str] = list(data.keys())  # get raw database column
         return scl == dcl  # validate database columns with schema columns
 
-    def _translate(self, data: Dict) -> DB_TYPE:
-        data_n = {c: TupleGraph(r) for c, r in data.items()}
-        return data_n
+    def _translate(self, data: Dict, db: Schema) -> Schema:
+        for _column in db.columns:
+            cdata = data[_column]
+            column = Column(data = cdata)
+            db[_column] = column
+        return db
 
     def _load(self, path: str, schema: Schema) -> DB_TYPE:
         with open(path, 'r') as file:
             data = orjson.loads(file.read())['db']
-            if self._validate(data, schema):
-                db = self._translate(data)
+            db = schema()
+            if self._validate(data, db):
+                db = self._translate(data, db)
                 return db
-        raise ValueError
-
-    def _dump(self, path: str, data: Dict, mode='wb+'):
-        with open(path, mode) as dbfile:
-            dbfile.write(orjson.dumps(data, default=tg_typer))
+            raise ValueError
 
     def load_op(self, obj: DBLoad) -> DBCarrier:
-        data = self._load(obj.path, obj.structure)
-        obj.db = data
+        db = self._load(obj.path, obj.structure)
+        obj.db = db
         return obj
 
+    def _dump(self, path: str, db: Schema, mode='wb+'):
+        columns = db.columns
+        print(db)
+        flag = db.ID.flag
+        data = {
+            c : list(db[c].data[:flag])
+            for c in columns
+        }
+        print(data) 
+        with open(path, mode) as dbfile:
+            dbfile.write(orjson.dumps({'db':data}))
+
     def dump_op(self, obj: DBDump):
-        self._dump(obj.path, {'db': obj.db})
+        db = obj.db
+        self._dump(obj.path, db)
 
     def create_database_op(self, obj: CreateJsonDB):
-        self._dump(obj.path, {
-            'db': getStructher(obj.structure)
-        }, mode='xb+')  # mode set for check database dosent exists
+        db = obj.structure()
+        self._dump(obj.path, db, mode='xb+')  # mode set for check database dosent exists
 
 
 class LogBox(FoxBox):
@@ -163,5 +179,6 @@ class BoxManager(FoxBox):
         self.boxbox = {bx.level: bx() for bx in box}
 
     def operate(self, obj):
-        for level in obj.levels:
+        levels = set(obj.levels) & self.boxbox.keys()
+        for level in levels:
             self.boxbox[level].operate(obj)
