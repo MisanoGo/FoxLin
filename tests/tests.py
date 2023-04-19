@@ -101,7 +101,5 @@ class TestFoxLin:
         assert rand_rec not in tuple(q.all())
 
     def test_dbms_benchmark(self, benchmark, table, fake_data):
-        #func = self.dbms
-        #result = benchmark(func, table, fake_data)
-        #assert result == fake_data
-        pass
+        func = self.dbms
+        benchmark(func, table, fake_data)
