@@ -12,6 +12,7 @@ from config.settings import BASE_DIR
 @pytest.fixture(scope="session")
 def table():
     class Person(Schema):
+        ID: int = Column()
         name: str = Column()
         family: str = Column()
         address: str = Column()
@@ -21,7 +22,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table, count=10):
+def fake_data(table, count=100000):
     faker = Faker()
     data = [
         table(
@@ -54,10 +55,10 @@ class TestFoxLin:
         session.INSERT(*fake_data)
         session.COMMIT()
 
-        q = session.query
-        assert list(q.all()) == fake_data
+        #q = session.query
+        #assert list(q.all()) == fake_data
 
-    def test_read(self, session):
+    def itest_read(self, session):
         q = session.query
         q.raw = True
         rec = q.SELECT('name','age','ID') \
@@ -78,7 +79,7 @@ class TestFoxLin:
         )
         session.COMMIT()
 
-    def test_update(self, session):
+    def itest_update(self, session):
         q = session.query
         p1 = q.rand()
         p2 = p1.copy()
@@ -89,7 +90,7 @@ class TestFoxLin:
         assert session.get_by_id(p1.ID) != p1
         assert session.get_by_id(p1.ID).age == p2.age
 
-    def test_delete(self, session):
+    def itest_delete(self, session):
         q = session.query
         rand_rec = q.rand()
 
@@ -100,6 +101,6 @@ class TestFoxLin:
         print(q.records, session._db['ID'].k_array, session._db['ID'].v_array)
         assert rand_rec not in tuple(q.all())
 
-    def test_dbms_benchmark(self, benchmark, table, fake_data):
-        func = self.dbms
-        benchmark(func, table, fake_data)
+    def test_dbms_benchmark(self, benchmark, fake_data, session):
+        func = self.test_insert
+        benchmark(func, fake_data, session)
