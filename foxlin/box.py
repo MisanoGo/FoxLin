@@ -1,4 +1,5 @@
 import os
+
 import orjson
 from numpy import array
 
@@ -7,7 +8,6 @@ from typing import (
     List,
     Dict
 )
-
 
 from .philosophy import (
     DBOperation,
@@ -19,6 +19,7 @@ from .philosophy import (
 
     Schema,
     Column,
+    IDColumn,
     DBCarrier,
 
     Log,
@@ -28,8 +29,6 @@ from .philosophy import (
 )
 
 from .joq import JsonQuery
-from .utils import getStructher, getKeyList
-
 
 class FoxBox:
     """
@@ -58,8 +57,8 @@ class MemBox(FoxBox):
 
         for record in obj.record:
             raw_data = record.dict()
-            db.ID.append(db.ID.flag)
-            list(map(lambda c: db[c].append(raw_data[c]),columns))
+            flag = db.ID.plus()
+            list(map(lambda c: db[c].__setitem__(flag,raw_data[c]),columns))
 
 
     def read_op(self, obj: DBRead):
@@ -79,8 +78,10 @@ class MemBox(FoxBox):
 
     def delete_op(self, obj: DBUpdate):
         for ID in obj.record:
-            list(map(lambda c:obj.db[c].pop(ID), obj.db.columns))
+            list(map(lambda c:obj.db[c].pop(ID), obj.db.columns[1:]))
+
     #__slots__ = ('_create_op','_level')
+
 
 
 class JsonDBOP(DBOperation):
@@ -89,7 +90,6 @@ class JsonDBOP(DBOperation):
     structure: Schema | None = None
 
     # TODO : validate path exists with pydantic validator
-
 
 class CreateJsonDB(JsonDBOP):
     op_name: str = "create_database"
@@ -115,10 +115,12 @@ class JsonBox(FoxBox):
         return scl == dcl  # validate database columns with schema columns
 
     def _translate(self, data: Dict, db: Schema) -> Schema:
-        for _column in db.columns:
+        idc = IDColumn(data = data['ID'])
+        for _column in db.columns[1:]:
             cdata = data[_column]
             column = Column(data = cdata)
             db[_column] = column
+        db['ID'] = idc
         return db
 
     def _load(self, path: str, schema: Schema) -> DB_TYPE:
@@ -137,13 +139,10 @@ class JsonBox(FoxBox):
 
     def _dump(self, path: str, db: Schema, mode='wb+'):
         columns = db.columns
-        print(db)
-        flag = db.ID.flag
         data = {
-            c : list(db[c].data[:flag])
+            c : list(db[c].data)
             for c in columns
         }
-        print(data) 
         with open(path, mode) as dbfile:
             dbfile.write(orjson.dumps({'db':data}))
 

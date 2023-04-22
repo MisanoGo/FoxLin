@@ -56,8 +56,9 @@ class Den(object):
         return JsonQuery(self)
 
     def get_by_id(self, ID: int, columns=None, raw: bool = False) -> Schema:
-        column_list = columns if columns else self._db.columns
-        record = {c:self._db[c][ID] for c in column_list}
+        column_list = columns if columns else self._db.columns # set custom or menualy columns
+        record = {c: self._db[c][ID] for c in column_list} # rich record
+        # check for export data as raw record or initial with Schema
         record = record if raw else self._schema.construct(**record) if columns else self._schema(**record)
         return record
 

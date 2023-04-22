@@ -1,13 +1,13 @@
-from typing import List, Dict, Union, Callable
+from typing import List, Dict, Union, Callable, Iterable
 
 from pydantic import BaseModel as BsMdl
 from numpy import ndarray, array, log2
 
-from .utils import get_attr
+from .utils import genid, get_attr
 #from .den import Den
 
 
-ID = str
+ID = int
 COLUMN = str
 LEVEL = str
 
@@ -16,52 +16,92 @@ class BaseModel(BsMdl):
         arbitrary_types_allowed = True
 
 class Column:
+    """
+    record manager
+    """
     def __init__(self, data = []):
-        self.data = array(data, dtype=object)
+        self._data = array(data, dtype=object)
         flag = len(data)
         if flag == 0 : 
-            self.__resize(8)
-        
-        self.flag = len(self.data) if flag else len(data)
-        self.__grow()
+            # if data list is empty resize array to 8 index
+            self.__resize(8) 
 
-        #if self.right :
-        #    self.relation = {}
+        # define max record index in array
+        self.flag = len(self._data) if flag else len(data)
+        self.__grow()
  
     def __grow(self):
-        chunck = self.flag / self.data.size * 100
+        """ auto check to resize array"""
+        _data = self._data
+        chunck = self.flag / _data.size * 100 # define data volume by percent
         change = -1 if chunck < 35 else +1 if chunck > 90 else 0
+
         if change:
-            new_size = int(2**(log2(self.data.size) + change))
+            new_size = int(2**(log2(_data.size) + change))
             self.__resize(new_size)
 
     def append(self, v):
-        self[self.flag] = v
+        flag = self.flag
+        self[flag] = v
+        return flag
 
     def update(self, i, v):
         self[i] = v
 
     def pop(self, i):
-        self.data.pop(i)
+        self.data[i] = None
 
     def __resize(self, size):
-        self.data.resize(size, refcheck=False)
+        self._data.resize(size, refcheck=False)
 
     def __getitem__(self, i):
-        return self.data[:self.flag][i]
+        return self.data[i]
 
     def __setitem__(self, k, v):
-        self.data[k] = v
+        self._data[k] = v
         if k >= self.flag : self.flag += 1
         self.__grow()
 
     def __iter__(self):
-        return iter(self.ldata)
+        return iter(self.data)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({str(self.data)})'
+
+    @property
+    def data(self):
+        return self._data[:self.flag]
+
+
+class UniqeColumn(Column):
+    def __init__(self, data: Iterable = []):
+        assert list(set(data)) == list(data) # check input data list is uniqe or not
+
+        super(UniqeColumn, self).__init__(data)
+
+    def __setitem__(self, k, v):
+        assert v not in self.data 
+        super().__setitem__(k, v)
+
+class RAIColumn(Column):
+    pass
+
+class IDColumn(RAIColumn, UniqeColumn):
+    def __init__(self, data: Iterable = []):
+        super(IDColumn, self).__init__(data)
+
+        self.fid = genid(self.flag)
+
+    def plus(self):
+        _id = next(self.fid)
+        return self.append(_id)
+
 
 class Schema(BaseModel):
     """
     databaser schema aliaser & also record container
     """
+    ID: IDColumn | int = Column()
 
     def __getitem__(self, i):
         return get_attr(self, i)
