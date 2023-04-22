@@ -12,7 +12,6 @@ from config.settings import BASE_DIR
 @pytest.fixture(scope="session")
 def table():
     class Person(Schema):
-        ID: int = Column()
         name: str = Column()
         family: str = Column()
         address: str = Column()
@@ -22,17 +21,16 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table, count=100000):
+def fake_data(table, count=1000):
     faker = Faker()
     data = [
         table(
-            ID=str(number),
             name=faker.name(),
             family=faker.name(),
             address=faker.address(),
             bio=faker.text(),
             age=random.randint(10, 80)
-        ) for number in range(count)
+        ) for _ in range(count)
     ]
     return data
 
@@ -79,7 +77,7 @@ class TestFoxLin:
         )
         session.COMMIT()
 
-    def itest_update(self, session):
+    def test_update(self, session):
         q = session.query
         p1 = q.rand()
         p2 = p1.copy()
@@ -90,16 +88,18 @@ class TestFoxLin:
         assert session.get_by_id(p1.ID) != p1
         assert session.get_by_id(p1.ID).age == p2.age
 
-    def itest_delete(self, session):
+    def test_delete(self, session):
         q = session.query
         rand_rec = q.rand()
 
         session.DELETE(rand_rec.ID)
         session.COMMIT()
+
         q = session.query
         q.reset()
-        print(q.records, session._db['ID'].k_array, session._db['ID'].v_array)
-        assert rand_rec not in tuple(q.all())
+        q.raw = True 
+        #print(q.records, session._db['ID'].k_array, session._db['ID'].v_array)
+        assert rand_rec.dict() not in tuple(q.all())
 
     def test_dbms_benchmark(self, benchmark, fake_data, session):
         func = self.test_insert
