@@ -103,7 +103,7 @@ class UniqeColumn(RaiColumn):
         super(UniqeColumn, self).__init__(data)
 
     def __setitem__(self, k, v):
-        assert v not in self.data 
+        assert hash(v) not in self.reli.keys()
         super().__setitem__(k, v)
 
 
