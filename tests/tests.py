@@ -21,7 +21,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table, count=1000):
+def fake_data(table, count=10000):
     faker = Faker()
     data = [
         table(
