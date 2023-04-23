@@ -2,18 +2,21 @@ from typing import List, Dict, Callable, Optional
 from contextlib import contextmanager
 import functools
 
-from .joq import JsonQuery
-from .philosophy import (
+from .query import JsonQuery
+
+from .sophy import (
     Schema,
     DBCarrier,
     DB_TYPE,
-    DBOperation,
-    CRUDOperation,
 
+)
+
+from .box import (
+    CRUDOperation,
     DBCreate,
     DBRead,
     DBUpdate,
-    DBDelete,
+    DBDelete
 )
 
 
@@ -56,6 +59,7 @@ class Den(object):
         return JsonQuery(self)
 
     def get_by_id(self, ID: int, columns=None, raw: bool = False) -> Schema:
+        ID = self._db.ID.geti(ID)
         column_list = columns if columns else self._db.columns # set custom or menualy columns
         record = {c: self._db[c][ID] for c in column_list} # rich record
         # check for export data as raw record or initial with Schema
@@ -95,7 +99,7 @@ class Den(object):
         self.ROLLBACK()
 
 
-    def discard(self, op: Optional[DBOperation] = None):
+    def discard(self, op: Optional[CRUDOperation] = None):
         # remove specified operation or last operation in commit list
         if op : self._commit_list.remove(op)
         else: self._commit_list.pop()

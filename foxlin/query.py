@@ -25,7 +25,7 @@ class JsonQuery(object):
     @property
     def __get_records(self):
         IDc = self.session._db.ID
-        return IDc.data[:IDc.flag].copy()
+        return IDc.data.copy()
 
 
     def reset(self):

@@ -16,7 +16,7 @@ TODO
 
 ## simple usage : 
 ```Python
-from foxlin import FoxLin, Schema, Column
+from foxlin import FoxLin, Schema, Column, UniqeColumn
 
 class MyTable(schema): # define your teble schema
     name: str = Column()

@@ -1,22 +1,24 @@
 import os
 from typing import List
 
-from .philosophy import Schema, CRUDOperation
+from .sophy import Schema 
 from .den import DenManager
 from .box import (
-    BoxManager,
     FoxBox,
     MemBox,
-    JsonBox,
     LogBox,
-    CreateJsonDB,
 
+    JsonBox,
+    CreateJsonDB,
     DBLoad,
     DBDump,
+
+    BoxManager,
+    CRUDOperation
 )
 
-BASIC_BOX = [MemBox, JsonBox, LogBox]
 
+BASIC_BOX = [MemBox, JsonBox, LogBox]
 
 class FoxLin(BoxManager, DenManager):
     """

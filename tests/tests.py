@@ -79,6 +79,7 @@ class TestFoxLin:
 
     def test_update(self, session):
         q = session.query
+        print(q.records)
         p1 = q.rand()
         p2 = p1.copy()
         p2.age = 19
