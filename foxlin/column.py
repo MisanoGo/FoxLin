@@ -99,9 +99,9 @@ class RaiColumn(BaseColumn):
         super().pop(i)
         self.reli.pop(hash(v))
  
-    #@property
-    #def data(self):
-        #return super().data[list(self.reli.values())]
+    @property
+    def data(self):
+        return super().data[list(self.reli.values())]
 
 
 class UniqeColumn(RaiColumn):
@@ -116,11 +116,11 @@ class UniqeColumn(RaiColumn):
 
 
 
-class IDColumn(RaiColumn):
+class IDColumn(UniqeColumn):
     def __init__(self, data: Iterable = []):
         super(IDColumn, self).__init__(data)
 
-        self.fid = genid(self[self.flag-1])
+        self.fid = genid(self._data[self.flag-1])
 
     def plus(self):
         _id = next(self.fid)

@@ -100,6 +100,13 @@ class TestFoxLin:
         q.raw = True
         assert rand_rec.dict() not in tuple(q.all())
 
-    def test_dbms_benchmark(self, benchmark, fake_data, session):
+    def test_speed(self, benchmark, fake_data, session):
         func = self.test_insert
         benchmark(func, fake_data, session)
+
+    def test_memory_speed(self, benchmark, fake_data, db):
+        db.boxbox.pop('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
+        func = self.test_insert
+        benchmark(func, fake_data, db.sessionFactory)
+
+
