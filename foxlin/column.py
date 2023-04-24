@@ -99,10 +99,6 @@ class RaiColumn(BaseColumn):
         super().pop(i)
         self.reli.pop(hash(v))
  
-    @property
-    def data(self):
-        return super().data[list(self.reli.values())]
-
 
 class UniqeColumn(RaiColumn):
     def __init__(self, data: Iterable = []):
