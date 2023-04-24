@@ -2,11 +2,13 @@ from typing import List, Dict
 
 import orjson
 
-from foxlin.column import Column, IDColumn
+from foxlin.column import Column, IDColumn, FoxNone
 from foxlin.sophy import (
     Schema,
     DBOperation,
     DBCarrier,
+    
+    Log,
 
     DB_TYPE,
     LEVEL
@@ -72,7 +74,7 @@ class JsonBox(FoxBox):
     def _dump(self, path: str, db: Schema, mode='wb+'):
         columns = db.columns
         data = {
-            c : list(db[c].data)
+            c : list(filter(lambda x: type(x) != FoxNone ,db[c].data))
             for c in columns
         }
         with open(path, mode) as dbfile:
@@ -85,4 +87,9 @@ class JsonBox(FoxBox):
     def create_database_op(self, obj: CreateJsonDB):
         db = obj.structure()
         self._dump(obj.path, db, mode='xb+')  # mode set for check database dosent exists
+        
+        log = Log(box_level=self.level,
+                  log_level='INFO',
+                  message=f'database created at {obj.path}.')
+        obj.logs.append(log)
 

@@ -3,11 +3,13 @@ from typing import Dict, List, Any
 #from .philosophy import Schema : can not import
 
 
-def genid(base: int):
-    x = base -1
+def genid(base: int|str):
+    itype = type(base)
+    x = int(base, 16) if itype == str else base
+
     while True:
         x = x+1
-        yield x
+        yield x if itype == int else hex(x)
 
 
 def migrate(path, obj):

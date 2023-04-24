@@ -53,10 +53,12 @@ class MemBox(FoxBox):
         db = obj.db
         columns = db.columns[1:] # except ID column
 
-        for record in obj.record:
+        def insert(record):
             raw_data = record.dict()
             flag = db.ID.plus()
-            list(map(lambda c: db[c].__setitem__(flag,raw_data[c]),columns))
+            tuple(map(lambda c: db[c].__setitem__(flag,raw_data[c]),columns))
+
+        tuple(map(insert,obj.record))
 
 
     def read_op(self, obj: DBRead):
@@ -74,9 +76,10 @@ class MemBox(FoxBox):
             _id = obj.db.ID.getv(record.ID)
             list(map(lambda c:obj.db[c].update(_id,raw_data[c]), obj.update))
 
-    def delete_op(self, obj: DBUpdate):
+    def delete_op(self, obj: DBDelete):
         for _id in obj.record:
-            list(map(lambda c:obj.db[c].pop(_id), obj.db.columns[1:]))
+            _id = obj.db.ID.getv(_id)
+            list(map(lambda c:obj.db[c].pop(_id), obj.db.columns))
 
     #__slots__ = ('_create_op','_level')
 

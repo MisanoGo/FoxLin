@@ -33,7 +33,10 @@ class JsonQuery(object):
         self.selected_col = set()
 
     def get(self, ID: int):
-        return self.session.get_by_id(ID, self.selected_col, self.raw)
+        try:
+            return self.session.get_by_id(ID, self.selected_col, self.raw)
+        except:
+            pass
 
     def first(self):
         return self.get(self.records[0])

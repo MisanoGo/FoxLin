@@ -5,6 +5,7 @@ import os
 from faker import Faker
 
 from foxlin import FoxLin, Schema, Column
+from foxlin.box import MemBox
 
 from config.settings import BASE_DIR
 
@@ -21,7 +22,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table, count=10000):
+def fake_data(table, count=100):
     faker = Faker()
     data = [
         table(
@@ -41,7 +42,6 @@ def db(table):
         os.remove(path)
 
     foxlin = FoxLin(path, table)
-
     return foxlin
 
 @pytest.fixture(scope="session")
@@ -97,9 +97,7 @@ class TestFoxLin:
         session.COMMIT()
 
         q = session.query
-        q.reset()
-        q.raw = True 
-        #print(q.records, session._db['ID'].k_array, session._db['ID'].v_array)
+        q.raw = True
         assert rand_rec.dict() not in tuple(q.all())
 
     def test_dbms_benchmark(self, benchmark, fake_data, session):

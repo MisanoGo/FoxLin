@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import List, Callable, Union
 
 from pydantic import BaseModel as BsMdl
 
@@ -21,6 +21,7 @@ class Schema(BaseModel):
     databaser schema aliaser & also record container
     """
     ID: IDColumn | int = Column()
+
 
     def __getitem__(self, i):
         return get_attr(self, i)

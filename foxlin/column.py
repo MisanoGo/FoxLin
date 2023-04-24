@@ -4,6 +4,9 @@ from numpy import array, log2
 
 from foxlin.utils import genid
 
+class FoxNone:
+    __repr__ = lambda self: self.__class__.__name__
+    __str__ = __repr__
 
 class BaseColumn:
     """
@@ -39,7 +42,7 @@ class BaseColumn:
         self[i] = v
 
     def pop(self, i):
-        self._data[i] = None
+        self._data[i] = FoxNone()
 
     def __resize(self, size):
         self._data.resize(size, refcheck=False)
@@ -64,17 +67,18 @@ class BaseColumn:
 
 class RaiColumn(BaseColumn):
     def __init__(self, data: Iterable = []):
-        super(RaiColumn, self).__init__(data)
         self.reli = {
             hash(data[i]) : i
             for i in range(len(data))
         }
 
+        super(RaiColumn, self).__init__(data)
+
     def getv(self, v):
         return self.reli[hash(v)]
 
     def geti(self, i):
-        return self.data[i]
+        return self[i]
 
     def __setitem__(self, k, v):
         super().__setitem__(k, v)
@@ -86,14 +90,18 @@ class RaiColumn(BaseColumn):
         super().pop(i)
         self.reli.pop(hash(v))
 
+    def pop(self, i):
+        # just alias for popi
+        self.popi(i)
+
     def popv(self, v):
         i = self.getv(v)
         super().pop(i)
         self.reli.pop(hash(v))
  
-    @property
-    def data(self):
-        return super().data[list(self.reli.values())]
+    #@property
+    #def data(self):
+        #return super().data[list(self.reli.values())]
 
 
 class UniqeColumn(RaiColumn):
@@ -108,11 +116,11 @@ class UniqeColumn(RaiColumn):
 
 
 
-class IDColumn(UniqeColumn):
+class IDColumn(RaiColumn):
     def __init__(self, data: Iterable = []):
         super(IDColumn, self).__init__(data)
 
-        self.fid = genid(self.flag)
+        self.fid = genid(self[self.flag-1])
 
     def plus(self):
         _id = next(self.fid)
