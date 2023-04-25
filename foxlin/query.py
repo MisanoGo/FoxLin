@@ -6,12 +6,14 @@ using by: query = JsonQuery()
           query.<query_method_name>()
 """
 from typing_extensions import Self
-from typing import Generator
+from typing import Generator, Callable
 
-from numpy import where, argsort, array
+from numpy import where, argsort, array, argwhere, arange
 from random import choice
 
-from .utils import get_attr
+from .sophy import Schema
+from .column import Column, FoxNone
+from .utils import get_attr 
 
 class JsonQuery(object):
     def __init__(self, session):
@@ -24,85 +26,83 @@ class JsonQuery(object):
 
     @property
     def __get_records(self):
-        IDc = self.session._db.ID
-        return IDc.data.copy()
-
+        return arange(len(self.ID))
 
     def reset(self):
         self.records = self.__get_records
         self.selected_col = set()
 
-    def get(self, ID: int):
-        try:
-            return self.session.get_by_id(ID, self.selected_col, self.raw)
-        except:
-            pass
+    def get_one(self, ID: int):
+        return self.session.get_one(ID, columns=self.selected_col, raw=self.raw)
+
+    def get_many(self, *ID: int):
+        return self.session.get_many(*ID,columns=self.selected_col, raw=self.raw)
 
     def first(self):
-        return self.get(self.records[0])
+        return self.get_one(self.rcords[0])
 
     def end(self):
-        return self.get(self.records[-1])
+        return self.get_one(self.records[-1])
 
     def rand(self):
         rand_id = choice(self.records)
-        return self.get(rand_id)
+        return self.get_one(rand_id)
 
     def all(self) -> Generator:
-        for ID in self.records:
-            yield self.get(ID)
+        return self.get_many(*self.records)
         self.reset()
 
-    def SELECT(self,*column) -> Self:
+    def select(self,*column: str) -> Self:
         self.selected_col = set(column)
         return self
 
-    def WHERE(self, *condition) -> Self:
+    def where(self, *condition) -> Self:
         recset = set(self.records)
         recs = self.__get_records
+
         for con in condition:
-            recset = recset & set(recs[where(con)])
+            x = recs[argwhere(con)]
+            y = x.reshape(len(x))
+            recset = recset & set(y)
         self.records = array(list(recset))
         return self
 
-    def ORDER_BY(self, column) -> Self:
-        recs = self.session._db[column].get(*self.records)
-        sorted_recs_index = argsort(recs)
-        self.records = self.records[sorted_recs_index]
+    def order_by(self, column: Column) -> Self:
+        recs = column[self.records] # get filterd recors column data 
+        sorted_recs_index = argsort(recs) # sort them & return index's
+        self.records = self.records[sorted_recs_index] # sort ID data by sorted column data args
         return self
 
-    def GROUP_BY(self, *args, **kwargs) -> Self:
+    def group_by(self, *args, **kwargs) -> Self:
         # TODO in 1.1
         return self
 
-    def HAVING(self, *args, **kwargs) -> Self:
+    def having(self, *args, **kwargs) -> Self:
         # TODO in 1.1
         return self
 
-    def LIMIT(self, n: int) -> Self:
+    def limit(self, n: int) -> Self:
         self.records = self.records[:n]
         return self
 
-    def COUNT(self):
+    def count(self):
         return len(self.records)
 
-    def rad(self, **columns): # right access data
-        for k,v in columns.items():
-            c = getattr(self, k)
-            self.WHERE(c == v)
-        d = self.first()
-        self.reset()
-        return d
+    def filter(self, func: Callable[[Schema], bool]) -> filter:
+        return filter(func, self.all())
 
-    def liner(self, **columns):
-        # liner search TODO in 1.2
+    def rai(self, **exp):
+        # TODO
+        # uses for get records by column set as a right access index type
         pass
 
     def __getattribute__(self, name):
         try:
             return get_attr(self, name)
         except:
+            # implemented for quick access of column data like : query.<column name>
             _db = self.session._db
-            assert name in _db.columns # TODO : set exception
-            return _db[name].ldata
+            assert name in _db.columns # TODO : set exception # assert if column don't exists
+            column = _db[name].data # get raw data
+            return column[where(column != FoxNone)] # filter None objects
 

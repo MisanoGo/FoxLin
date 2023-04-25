@@ -1,4 +1,4 @@
-from typing import List, Dict, Callable, Optional
+from typing import List, Dict, Callable, Optional, Generator
 from contextlib import contextmanager
 import functools
 
@@ -26,7 +26,7 @@ class Den(object):
     Den records operations on database and over then commited,
     commit list will send to Foxlin for real operate
 
-    oriented by SQL DML,TCL,DQL logic
+    oriented of SQL DML,TCL,DQL logic
 
     """
     def __init__(self,
@@ -43,6 +43,7 @@ class Den(object):
 
     @staticmethod
     def _commitRecorder(f) -> Callable:
+        # record exported operation & append them to commit list
         @functools.wraps(f)
         def wrapper(self, *args, **kwargs):
             robj = f(self, *args, **kwargs)
@@ -58,21 +59,25 @@ class Den(object):
     def query(self):
         return JsonQuery(self)
 
-    def get_by_id(self, ID: int, columns=None, raw: bool = False) -> Schema:
-        ID = self._db.ID.getv(ID)
+    def get_one(self, ID: int, columns=None, raw: bool=False) -> Schema | Dict:
+        r = list(self.get_many(ID, columns=columns, raw=raw))[0]
+        return r
+
+    def get_many(self, *ID: int, columns=None, raw: bool = False) -> Generator:
         assert ID != None # check for record exists 
         column_list = columns if columns else self._db.columns # set custom or menualy columns
-        record = {c: self._db[c][ID] for c in column_list} # rich record
-        # check for export data as raw record or initial with Schema
-        record = record if raw else self._schema.construct(**record) if columns else self._schema(**record)
-        return record
+
+        for _id in ID:
+            rec = {c: self._db[c][_id] for c in column_list} # rich record as dict
+            # check for export data as raw record or initial with Schema
+            yield rec if raw else self._schema.construct(**rec)
 
     @_commitRecorder
     def INSERT(self, *s: Schema) -> DBCreate:
         return DBCreate(record=s, db=self._db)
 
     @_commitRecorder
-    def READ(self, **kwargs):
+    def READ(self, **kwargs) -> DBRead:
         return DBRead(**kwargs, session=self)
 
     @_commitRecorder
