@@ -2,7 +2,7 @@ from typing import List
 
 from .fox import FoxBox
 
-from foxlin.query import JsonQuery
+from foxlin.query import FoxQuery
 from foxlin.sophy import (
     Schema,
     DBOperation, 
