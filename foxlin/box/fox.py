@@ -4,8 +4,8 @@ from foxlin.sophy import DBOperation
 
 class FoxBox:
     """
-    Foxbox is a operate manager for CRUD and user-self operator definated
-    can use in states of memory-cache database and file-based db
+    Foxbox is abs class as a operate manager for CRUD and user-self operator definated
+    can use in states of memory-cache and file-based db
 
     dbom: database operation manager
     """
@@ -20,6 +20,11 @@ class FoxBox:
                 obj.callback(obj)
 
 class BoxManager(FoxBox):
+    """
+    Box manager design like a router 
+    for route & manager operations
+    use level args for route and call box of levels
+    """
     def __init__(self, *box):
         self.boxbox = {bx.level: bx() for bx in box}
 
