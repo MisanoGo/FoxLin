@@ -1,7 +1,6 @@
-from typing import Dict, List, Any
+from typing import  Any
 
-#from .philosophy import Schema : can not import
-
+from .sophy import Schema
 
 def genid(base: int|str):
     itype = type(base)
@@ -12,8 +11,9 @@ def genid(base: int|str):
         yield x if itype == int else hex(x)
 
 
-def migrate(path, obj):
+def migrate(path, new_schema: Schema):
     # TODO in 1.1
+    # TODO migrate structure of changed database schema
     pass
 
 def get_attr(obj, name) -> Any:
