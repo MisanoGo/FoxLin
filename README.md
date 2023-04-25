@@ -2,7 +2,9 @@
 simple, fast, funny column base dbms on python
 
 ### philosophy
-TODO
+Foxlin developed to create best User experience of DBMS interface for mini projects
+it is fast because use of numpy array for contain columns data in memory
+and using pydantic for manage data in program
 
 ### Quick access :
  - docs : [todo]()
@@ -10,21 +12,29 @@ TODO
  - code : [todo]()
 
 
-### Futures :
->   - TODO
+#### requirements
+ - numpy
+ - pydantic
+ - orjson
 
+# installation
+```console
+$ pip install foxlin
+```
 
-## simple usage : 
+## simple usage :
 ```Python
 from foxlin import FoxLin, Schema, Column, UniqeColumn
 
-class MyTable(schema): # define your teble schema
+class MyTable(schema): 
+    # define your teble schema
+    # set your own column type needed, splited for low order and high performance
     name: str = Column()
     age: int = Column
-    username: str = Column()
+    username: str = UniqeColumn()
     password: str = Column()
 
-db = FoxLin('./db.json', MyTable) # create db / auto_setup will create database and load
+db = FoxLin('./db.json', MyTable) # create db
 
 data = [
     MyTable(name='brian', age=37, username='biran1999', password='123456789')
