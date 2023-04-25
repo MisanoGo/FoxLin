@@ -74,7 +74,7 @@ class JsonBox(FoxBox):
     def _dump(self, path: str, db: Schema, mode='wb+'):
         columns = db.columns
         data = {
-            c : list(filter(lambda x: type(x) != FoxNone ,db[c].data))
+            c : list(FoxNone.filter(db[c].data))
             for c in columns
         }
         with open(path, mode) as dbfile:

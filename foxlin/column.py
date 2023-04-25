@@ -8,6 +8,8 @@ class FoxNone:
     __repr__ = lambda self: self.__class__.__name__
     __str__ = __repr__
 
+    filter = lambda data: filter(lambda x: x != FoxNone ,data)
+
 class BaseColumn:
     """
     record manager
@@ -42,7 +44,7 @@ class BaseColumn:
         self[i] = v
 
     def pop(self, i):
-        self._data[i] = FoxNone()
+        self._data[i] = FoxNone
 
     def __resize(self, size):
         self._data.resize(size, refcheck=False)
