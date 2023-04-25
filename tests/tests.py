@@ -79,15 +79,14 @@ class TestFoxLin:
 
     def test_update(self, session):
         q = session.query
-        print(q.records)
         p1 = q.rand()
         p2 = p1.copy()
         p2.age = 19
         session.UPDATE(p2, updated_fields=['age'])
         session.COMMIT()
 
-        assert session.get_by_id(p1.ID) != p1
-        assert session.get_by_id(p1.ID).age == p2.age
+        assert session.get_one(p1.ID) != p1
+        assert session.get_one(p1.ID).age == p2.age
 
     def test_delete(self, session):
         q = session.query
@@ -100,7 +99,7 @@ class TestFoxLin:
         q.raw = True
         assert rand_rec.dict() not in tuple(q.all())
 
-    def test_speed(self, benchmark, fake_data, session):
+    def test_io_speed(self, benchmark, fake_data, session):
         func = self.test_insert
         benchmark(func, fake_data, session)
 
@@ -108,5 +107,9 @@ class TestFoxLin:
         db.boxbox.pop('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
         func = self.test_insert
         benchmark(func, fake_data, db.sessionFactory)
+
+    def test_read_speed(self, benchmark, session):
+        f = lambda : list(session.query.all())
+        benchmark(f)
 
 
