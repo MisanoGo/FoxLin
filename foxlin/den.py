@@ -64,6 +64,7 @@ class Den(object):
         return r
 
     def get_many(self, *ID: int, columns=None, raw: bool = False) -> Generator:
+        # TODO : also test a way to first get filterd column data by id then export records
         assert ID != None # check for record exists 
         column_list = columns if columns else self._db.columns # set custom or menualy columns
 
