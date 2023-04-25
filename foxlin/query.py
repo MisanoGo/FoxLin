@@ -88,11 +88,20 @@ class FoxQuery(object):
     def count(self):
         return len(self.records)
 
+    def max(self, column):
+        return column[self.records].max() # get max of filterd records
+
+    def min(self, column):
+        return column[self.records].min()
+
+    def mean(self, column):
+        return column[self.records].mean()
+
     def filter(self, func: Callable[[Schema], bool]) -> filter:
         return filter(func, self.all())
 
     def rai(self, **exp):
-        # TODO
+        # TODO in 1.1
         # uses for get records by column set as a right access index type
         pass
 
