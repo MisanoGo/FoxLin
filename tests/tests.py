@@ -50,8 +50,8 @@ def session(db):
 
 class TestFoxLin:
     def test_insert(self, fake_data, session):
-        session.INSERT(*fake_data)
-        session.COMMIT()
+        session.insert(*fake_data)
+        session.commit()
 
         #q = session.query
         #assert list(q.all()) == fake_data
@@ -59,15 +59,15 @@ class TestFoxLin:
     def itest_read(self, session):
         q = session.query
         q.raw = True
-        rec = q.SELECT('name','age','ID') \
-               .ORDER_BY('age')\
-               .LIMIT(5)\
+        rec = q.select('name','age','ID') \
+               .order_by('age')\
+               .limit(5)\
                .all()
 
         def _(obj):
             assert list(rec) == list(obj.record)
 
-        session.READ(
+        session.read(
             callback = _,
             callback_level = 'memory',
             raw = True,
@@ -75,15 +75,15 @@ class TestFoxLin:
             limit = 5,
             order = 'age'
         )
-        session.COMMIT()
+        session.commit()
 
     def test_update(self, session):
         q = session.query
         p1 = q.rand()
         p2 = p1.copy()
         p2.age = 19
-        session.UPDATE(p2, updated_fields=['age'])
-        session.COMMIT()
+        session.update(p2, updated_fields=['age'])
+        session.commit()
 
         assert session.get_one(p1.ID) != p1
         assert session.get_one(p1.ID).age == p2.age
@@ -92,8 +92,8 @@ class TestFoxLin:
         q = session.query
         rand_rec = q.rand()
 
-        session.DELETE(rand_rec.ID)
-        session.COMMIT()
+        session.delete(rand_rec.ID)
+        session.commit()
 
         q = session.query
         q.raw = True
