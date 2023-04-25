@@ -1,6 +1,6 @@
 from typing import  Any
 
-from .sophy import Schema
+#from .sophy import Schema
 
 def genid(base: int|str):
     itype = type(base)
@@ -11,7 +11,7 @@ def genid(base: int|str):
         yield x if itype == int else hex(x)
 
 
-def migrate(path, new_schema: Schema):
+def migrate(path, new_schema):
     # TODO in 1.1
     # TODO migrate structure of changed database schema
     pass
