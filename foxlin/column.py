@@ -22,7 +22,7 @@ class BaseColumn:
             self.__resize(8) 
 
         # define max record index in array
-        self.flag = len(self._data) if flag else len(data)
+        self.flag = len(self._data) if flag else len(data) # max inserted arg
         self.__grow()
  
     def __grow(self):
@@ -68,6 +68,11 @@ class BaseColumn:
         return self._data[:self.flag]
 
 class RaiColumn(BaseColumn):
+    """
+    Right Access Index
+    is a sub class of Base Column to develop a state 
+    to able get value index with order(1)
+    """
     def __init__(self, data: Iterable = []):
         self.reli = {
             hash(data[i]) : i
