@@ -2,7 +2,7 @@ from typing import List, Dict, Callable, Optional, Generator
 from contextlib import contextmanager
 import functools
 
-from .query import JsonQuery
+from .query import FoxQuery
 
 from .sophy import (
     Schema,
@@ -57,7 +57,7 @@ class Den(object):
 
     @property
     def query(self):
-        return JsonQuery(self)
+        return FoxQuery(self)
 
     def get_one(self, ID: int, columns=None, raw: bool=False) -> Schema | Dict:
         r = list(self.get_many(ID, columns=columns, raw=raw))[0]
@@ -73,36 +73,36 @@ class Den(object):
             yield rec if raw else self._schema.construct(**rec)
 
     @_commitRecorder
-    def INSERT(self, *s: Schema) -> DBCreate:
+    def insert(self, *s: Schema) -> DBCreate:
         return DBCreate(record=s, db=self._db)
 
     @_commitRecorder
-    def READ(self, **kwargs) -> DBRead:
+    def read(self, **kwargs) -> DBRead:
         return DBRead(**kwargs, session=self)
 
     @_commitRecorder
-    def UPDATE(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
+    def update(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
         return DBUpdate(record=s, update=updated_fields, db=self._db)
 
     @_commitRecorder
-    def DELETE(self, *ID: int) -> DBDelete:
+    def delete(self, *ID: int) -> DBDelete:
         return DBDelete(record=ID, db=self._db)
 
-    def COMMIT(self, savepoint: Optional[str] = None):
+    def commit(self, savepoint: Optional[str] = None):
         if savepoint:
             self._commiter(self._commit_point[savepoint])
             self._commit_point.pop(savepoint)
         else :
             self._commiter(self._commit_list)
-        self.ROLLBACK()
+        self.rollback()
 
-    def ROLLBACK(self, savepoint: Optional[str] = None):
+    def rollback(self, savepoint: Optional[str] = None):
         self._commit_list = self._commit_point[savepoint] if savepoint else []
         if savepoint : self._commit_point.pop(savepoint)
 
-    def SAVEPOINT(self, name: str):
+    def savepoint(self, name: str):
         self._commit_point[name] = self._commit_list
-        self.ROLLBACK()
+        self.rollback()
 
 
     def discard(self, op: Optional[CRUDOperation] = None):
@@ -128,7 +128,7 @@ class DenManager(object):
     def session(self):
         s = self.sessionFactory
         yield s
-        s.COMMIT()
+        s.commit()
         del s
 
     __slots__ = ('_session', '_sessionFactory')

@@ -15,7 +15,7 @@ from .sophy import Schema
 from .column import Column, FoxNone
 from .utils import get_attr 
 
-class JsonQuery(object):
+class FoxQuery(object):
     def __init__(self, session):
         self.session = session
         self.records = []

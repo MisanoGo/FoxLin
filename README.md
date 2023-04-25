@@ -34,17 +34,17 @@ data = [
 ]
 
 with db.session as db_session:
-    db_session.INSERT(*data)
+    db_session.insert(*data)
     # auto commit after end of context manager
 
 # OR 
 
 db_session = db.sessionFactory
-db_session.INSERT(*data)
-db_session.COMMIT()
+db_session.insert(*data)
+db_session.commit()
 
 query = db_session.query
-record = query.WHERE(query.age > 17, query.name == Ali).ORDER_BY('age').first()
+record = query.where(query.age > 17, query.name == Ali).order_by('age').first()
 
 print(record.name, record.username, record.password)
 ```
@@ -56,7 +56,7 @@ print(record.name, record.username, record.password)
 - [x] session model
 - [x] transaction but by grouping commits **not ACDI**
 - [x] write test
-- [ ] benchmarck test
+- [x] benchmarck test
 - [x] add logs to .logs file
 - [ ] define logs in operation statment and able to setting by user
 - [ ] generate logs
@@ -70,7 +70,8 @@ print(record.name, record.username, record.password)
 - migrate
 
 ##### TODO at 1.2
-- cache system
+- memory cache system
+- query cache system
 - session privilege's
 - ...
 
