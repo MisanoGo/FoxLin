@@ -21,11 +21,18 @@ class FoxBox:
 
 class BoxManager:
     """
-    Box manager design like a router 
+    Box manager design like a router
     for route & manager operations
-    use level args for route and call box of levels
+
+    Parameters
+    ----------
+    *box: FoxBox
+        get list of box for route operations by level
+    auto_enable: bool = True
+        by default box's are disable, must enable them
     """
-    def __init__(self, *box, auto_enable: bool = True):
+
+    def __init__(self, *box: FoxBox, auto_enable: bool = True):
         self.box_list:    Dict[LEVEL, FoxBox] = {}
         self.__on_box_list: Dict[LEVEL, FoxBox] = {}
 
@@ -43,7 +50,6 @@ class BoxManager:
             assert isinstance(*bargs) or issubclass(*bargs)
             box_tray[b.level] = b
 
-
         if auto_enable:
             self.__on_box_list.update(box_tray)
 
@@ -54,11 +60,11 @@ class BoxManager:
         return self.__on_box_list.pop(level) # return removed box
 
     def enable_box(self, level: LEVEL) -> bool:
-        # for enable a box to handle operations of spe
+        # for enable a box to handle operations of specified level 
         if level in self.box_list.keys():
             box = self.box_list[level]
             self.__on_box_list[level] = box
-            # return True for success enable
+            # return True for enable success 
             return True
         return False
 

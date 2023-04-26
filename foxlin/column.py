@@ -12,7 +12,19 @@ class FoxNone:
 
 class BaseColumn:
     """
-    record manager
+    column data manager
+
+    here uses numpy array for contain data
+    why numpy ? for auto handle queries & data managing
+
+    <flag> is value for define max of record insertd
+    uses because always just some part of array is reched
+    and have a empty part
+
+    Parameters
+    ----------
+    data: list
+        data will initial with numpy array
     """
     def __init__(self, data = []):
         self._data = array(data, dtype=object)
@@ -120,6 +132,10 @@ class UniqeColumn(RaiColumn):
 
 
 class IDColumn(UniqeColumn):
+    """
+    implemented for ID column in schema of table
+
+    """
     def __init__(self, data: Iterable = []):
         super(IDColumn, self).__init__(data)
 
@@ -131,4 +147,5 @@ class IDColumn(UniqeColumn):
 
 
 class Column(BaseColumn):
+    # Just alias of BaseColumn
     pass

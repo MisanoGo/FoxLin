@@ -22,8 +22,8 @@ from .box import (
 
 class Den(object):
     """
-    Den is session model for FoxLin DB manager here
-    Den records operations on database and over then commited,
+    Den is session model for FoxLin DB manager 
+    here Den records operations on database and over then commited,
     commit list will send to Foxlin for real operate
 
     oriented of SQL DML,TCL,DQL logic
@@ -131,5 +131,9 @@ class DenManager(object):
         yield s
         s.commit()
         del s
+
+    @property
+    def query(self):
+        return self.sessionFactory.query
 
     __slots__ = ('_session', '_sessionFactory')
