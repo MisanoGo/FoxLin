@@ -1,6 +1,6 @@
-from typing import Callable
+from typing import Callable, Dict, List
 
-from foxlin.sophy import DBOperation
+from foxlin.sophy import DBOperation, LEVEL
 
 class FoxBox:
     """
@@ -19,16 +19,52 @@ class FoxBox:
             if self.level == obj.callback_level:
                 obj.callback(obj)
 
-class BoxManager(FoxBox):
+class BoxManager:
     """
     Box manager design like a router 
     for route & manager operations
     use level args for route and call box of levels
     """
-    def __init__(self, *box):
-        self.boxbox = {bx.level: bx() for bx in box}
+    def __init__(self, *box, auto_enable: bool = True):
+        self.box_list:    Dict[LEVEL, FoxBox] = {}
+        self.__on_box_list: Dict[LEVEL, FoxBox] = {}
 
-    def operate(self, obj):
-        levels = set(obj.levels) & self.boxbox.keys()
-        for level in levels:
-            self.boxbox[level].operate(obj)
+        self.add_box(*box, auto_enable=auto_enable)
+
+    def operate(self, op: DBOperation):
+        # send operation to own their boxes
+        level_list = set(op.levels) & self.__on_box_list.keys()
+        list(map(lambda level: self.__on_box_list[level].operate(op), level_list))
+ 
+    def add_box(self, *box: FoxBox, auto_enable: bool = True):
+        box_tray = {}
+        for b in box:
+            bargs = (b, FoxBox)
+            assert isinstance(*bargs) or issubclass(*bargs)
+            box_tray[b.level] = b
+
+
+        if auto_enable:
+            self.__on_box_list.update(box_tray)
+
+        self.box_list.update(box_tray)
+
+    def remove_box(self, level: LEVEL):
+        self.box_list.pop(level)
+        return self.__on_box_list.pop(level) # return removed box
+
+    def enable_box(self, level: LEVEL) -> bool:
+        # for enable a box to handle operations of spe
+        if level in self.box_list.keys():
+            box = self.box_list[level]
+            self.__on_box_list[level] = box
+            # return True for success enable
+            return True
+        return False
+
+    def disable_box(self, level:LEVEL) -> bool:
+        if level in self.__on_box_list.keys():
+            self.__on_box_list.pop(level)
+            return True
+        return False
+
