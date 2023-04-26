@@ -6,6 +6,8 @@ Foxlin developed to create best User experience of DBMS interface for mini proje
 it is fast because use of numpy array for contain columns data in memory
 and using pydantic for manage data in program
 
+also have powerfull process managers.
+
 ### Quick access :
  - docs : [todo]()
  - pypi : [todo]()
@@ -59,6 +61,8 @@ record = query.where(query.age > 17, query.name == Ali).order_by('age').first()
 print(record.name, record.username, record.password)
 ```
 
+## TODO
+
 ##### TODO in 1.0
 - [x] crud
 - [x] level base operation manager
@@ -68,7 +72,7 @@ print(record.name, record.username, record.password)
 - [x] write test
 - [x] benchmarck test
 - [x] add logs to .logs file
-- [ ] define logs in operation statment and able to setting by user
+- [x] define logs in operation statment and able to setting by user
 - [ ] generate logs
 - [x] quering
 
@@ -83,5 +87,6 @@ print(record.name, record.username, record.password)
 - memory cache system
 - query cache system
 - session privilege's
+- multi table
 - ...
 

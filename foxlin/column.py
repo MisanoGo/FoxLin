@@ -26,7 +26,7 @@ class BaseColumn:
         self.__grow()
  
     def __grow(self):
-        """ auto check to resize array"""
+        """ auto check to resize array """
         _data = self._data
         chunck = self.flag / _data.size * 100 # define data volume by percent
         change = -1 if chunck < 35 else +1 if chunck > 90 else 0
@@ -70,7 +70,7 @@ class BaseColumn:
 class RaiColumn(BaseColumn):
     """
     Right Access Index
-    is a sub class of Base Column to develop a state 
+    is a sub class of Base Column to develop a state
     to able get value index with order(1)
     """
     def __init__(self, data: Iterable = []):
