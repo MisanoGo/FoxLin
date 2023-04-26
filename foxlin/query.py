@@ -1,10 +1,3 @@
-
-"""
-Joq.py used for Dbms queries
-every dbms queries will write in JsonQuery object as methods
-using by: query = JsonQuery()
-          query.<query_method_name>()
-"""
 from typing_extensions import Self
 from typing import Generator, Callable
 
@@ -13,9 +6,21 @@ from random import choice
 
 from .sophy import Schema
 from .column import Column, FoxNone
-from .utils import get_attr 
+from .utils import get_attr
 
 class FoxQuery(object):
+    """ 
+    FoxQuery is a interface for operate queries of DB on memory
+    in every inctance FoxQuery will get indecies of recs on ID column
+    and after filter them by user through where() method
+    can access filterd records by all() method or first(), end(), rand()
+    also can use raw param to get raw-dict data of record
+
+    Parameters
+    ----------
+    session: Den
+        for access to data of columns
+    """
     def __init__(self, session):
         self.session = session
         self.records = []
@@ -86,19 +91,26 @@ class FoxQuery(object):
         return self
 
     def count(self):
+        # get count value of filterd records
         return len(self.records)
 
     def max(self, column):
+        # get max value of filterd records
         return column[self.records].max() # get max of filterd records
 
     def min(self, column):
+        # get min value of filterd records
         return column[self.records].min()
 
     def mean(self, column):
+        # get average value of filterd records
         return column[self.records].mean()
 
-    def filter(self, func: Callable[[Schema], bool]) -> filter:
-        return filter(func, self.all())
+    def filter(self, func: Callable[[Schema], bool]) -> Self:
+        """ TODO """
+        f = filter(func, self.all())
+        self.records = array(list(f))
+        return self
 
     def rai(self, **exp):
         # TODO in 1.1
