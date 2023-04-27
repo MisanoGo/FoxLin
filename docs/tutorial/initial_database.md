@@ -35,7 +35,7 @@ you can disable or enable box's
 
 for example you just need in memory db
 and dont need to save it in file
-so initail database like this:
+so initial database like this:
 ```Python
 db = FoxLin(schema=MyTable, auto_setup=False, auto_enable=False)
 # now all box are disable, let's enable memory box

@@ -35,3 +35,40 @@ with db.session as session:
     session.delete(17)
 # auto call commit()
 ```
+
+##### undo action's
+in FoxLin you can undo your action's
+```Python
+si = session.insert(...) # methods return operation data class
+su = session.update(...)
+sd = session.delete(...)
+
+session.discard() # return sd
+session.discard(si) # remove si operation
+
+s.commit() # su will apply
+```
+
+##### SAVE POINT, ROLLBACK: change commit line
+TODO 
+``` Python
+si = session.insert(...)
+su = session.update(...)
+sd = session.delete(...)
+
+# transfer operation to 'sv_name' and clear main op list
+session.savepoint('sv_name')
+session.commit() # no change
+
+# return operation in 'sv_name' in main op list
+session.rollback('sv_name')
+session.rollback() # will clear main op list
+
+session.add_op(si) # add operation to op list
+session.savepoint('sv_name')
+
+session.commit('sv_name') # commit operation in 'sv_name'
+
+session._commit_list # main op list
+session._commit_point # saved points
+```
