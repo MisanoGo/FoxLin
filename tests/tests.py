@@ -83,7 +83,7 @@ class TestFoxLin:
         p1 = q.rand()
         p2 = p1.copy()
         p2.age = 19
-        session.update(p2, updated_fields=['age'])
+        session.update(p2, columns=['age'])
         session.commit()
         
         query = session.query

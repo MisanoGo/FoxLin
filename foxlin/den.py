@@ -8,6 +8,7 @@ from .sophy import (
     Schema,
     DBCarrier,
     DB_TYPE,
+    COLUMN
 
 )
 
@@ -74,20 +75,23 @@ class Den(object):
             yield rec if raw else self._schema.construct(**rec)
 
     @_commitRecorder
-    def insert(self, *s: Schema) -> DBCreate:
-        return DBCreate(record=s, db=self._db)
+    def insert(self, *recs: Schema, columns: List[COLUMN]= None) -> DBCreate:
+        if not columns:
+            columns = self._db.columns[1:] # except ID
+        return DBCreate(record=recs, create=columns, db=self._db)
 
     @_commitRecorder
     def read(self, **kwargs) -> DBRead:
+        # out of service
         return DBRead(**kwargs, session=self)
 
     @_commitRecorder
-    def update(self, *s: Schema, updated_fields: List[str]) -> DBUpdate:
-        return DBUpdate(record=s, update=updated_fields, db=self._db)
+    def update(self, *recs: Schema, columns: List[COLUMN]) -> DBUpdate:
+        return DBUpdate(record=recs, update=columns, db=self._db)
 
     @_commitRecorder
-    def delete(self, *ID: int) -> DBDelete:
-        return DBDelete(record=ID, db=self._db)
+    def delete(self, *recs: Schema) -> DBDelete:
+        return DBDelete(record=recs, db=self._db)
 
     def commit(self, savepoint: Optional[str] = None):
         if savepoint:
@@ -109,7 +113,7 @@ class Den(object):
     def discard(self, op: Optional[CRUDOperation] = None):
         # remove specified operation or last operation in commit list
         if op : self._commit_list.remove(op)
-        else: self._commit_list.pop()
+        else: return self._commit_list.pop()
 
     #__slots__ = ('_insert','_commit','_db','_schema','_commiter','_commit_list')
 

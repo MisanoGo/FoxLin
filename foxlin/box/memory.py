@@ -22,6 +22,7 @@ class CRUDOperation(DBOperation, DBCarrier):
 
 class DBCreate(CRUDOperation):
     op_name: str = 'CREATE'
+    create : List[COLUMN]
 
 class DBRead(CRUDOperation):
     op_name: str = "READ"
@@ -41,7 +42,6 @@ class DBUpdate(CRUDOperation):
 
 class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
-
     record: List[ID]
 
 
@@ -51,18 +51,18 @@ class MemBox(FoxBox):
 
     def create_op(self, obj: DBCreate):
         db = obj.db
-        columns = db.columns[1:] # except ID column
+        columns = obj.create # except ID column
 
         def insert(record):
-            raw_data = record.dict()
             flag = db.ID.plus()
-            tuple(map(lambda c: db[c].__setitem__(flag,raw_data[c]),columns))
+            tuple(map(lambda col: db[col].__setitem__(flag, record[col]), columns))
 
-        tuple(map(insert,obj.record))
+        tuple(map(insert, obj.record))
 
 
     def read_op(self, obj: DBRead):
-        q: JsonQuery = obj.session.query
+        # out of service
+        q: FoxQuery = obj.session.query
         q.raw = obj.raw
         obj.record = q.SELECT(*obj.select)\
                       .ORDER_BY(obj.order)\
@@ -71,15 +71,15 @@ class MemBox(FoxBox):
         # TODO in 1.1
 
     def update_op(self, obj: DBUpdate):
+        columns = obj.update
         for record in obj.record:
-            raw_data = record.dict()
             _id = obj.db.ID.getv(record.ID)
-            list(map(lambda c:obj.db[c].update(_id,raw_data[c]), obj.update))
+            list(map(lambda col: obj.db[col].update(_id, record[col]), columns))
 
     def delete_op(self, obj: DBDelete):
         for _id in obj.record:
             _id = obj.db.ID.getv(_id)
             list(map(lambda c:obj.db[c].pop(_id), obj.db.columns))
 
-    #__slots__ = ('_create_op','_level')
+    __slots__ = ('_create_op','_update_op','_delete_op','_level')
 
