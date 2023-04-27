@@ -1,5 +1,9 @@
-from foxlin.core.fox import FoxLin
-from foxlin.core.sophy import Schema
-from foxlin.core.column import Column, UniqeColumn
+from foxlin.core import (
+    FoxLin,
+    Schema,
+
+    Column,
+    UniqeColumn
+)
 
 __all__ = ('FoxLin', 'Schema', 'Column', 'UniqeColumn')

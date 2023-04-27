@@ -6,7 +6,6 @@ import os
 from faker import Faker
 
 from foxlin import FoxLin, Schema, Column
-from foxlin.box import MemBox
 
 from config.settings import BASE_DIR
 
@@ -23,7 +22,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table, count=100000):
+def fake_data(table, count=10000):
     faker = Faker()
     data = [
         table(
@@ -50,7 +49,7 @@ def session(db):
     return db.sessionFactory
 
 class TestFoxLin:
-    def itest_insert(self, fake_data, session):
+    def test_insert(self, fake_data, session):
         session.insert(*fake_data)
         session.commit()
 
@@ -78,7 +77,7 @@ class TestFoxLin:
         )
         session.commit()
 
-    def itest_update(self, session):
+    def test_update(self, session):
         q = session.query
         p1 = q.rand()
         p2 = p1.copy()
@@ -90,7 +89,7 @@ class TestFoxLin:
         assert query.get_one(p1.ID) != p1
         assert query.get_by_id(p1.ID).age == p2.age
 
-    def itest_delete(self, session):
+    def test_delete(self, session):
         q = session.query
         rand_rec = q.rand()
 
