@@ -49,12 +49,11 @@ class JsonBox(FoxBox):
         return scl == dcl  # validate database columns with schema columns
 
     def _translate(self, data: Dict, db: Schema) -> Schema:
-        idc = IDColumn(data = data['ID'])
-        for _column in db.columns[1:]:
-            cdata = data[_column]
-            column = Column(data = cdata)
-            db[_column] = column
-        db['ID'] = idc
+        for _column in db.columns:
+            cdata  = data[_column]
+            column = db[_column]
+
+            column.attach(cdata)
         return db
 
     def _load(self, path: str, schema: Schema) -> DB_TYPE:
