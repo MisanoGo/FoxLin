@@ -1,3 +1,4 @@
+from cProfile import run
 import pytest
 import random
 import os
@@ -84,9 +85,10 @@ class TestFoxLin:
         p2.age = 19
         session.update(p2, updated_fields=['age'])
         session.commit()
-
-        assert session.get_one(p1.ID) != p1
-        assert session.get_one(p1.ID).age == p2.age
+        
+        query = session.query
+        assert query.get_one(p1.ID) != p1
+        assert query.get_by_id(p1.ID).age == p2.age
 
     def test_delete(self, session):
         q = session.query
@@ -104,7 +106,7 @@ class TestFoxLin:
         benchmark(func, fake_data, session)
 
     def test_memory_speed(self, benchmark, fake_data, db):
-        db.boxbox.pop('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
+        db.disable_box('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
         func = self.test_insert
         benchmark(func, fake_data, db.sessionFactory)
 
