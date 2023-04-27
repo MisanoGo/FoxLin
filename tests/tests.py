@@ -106,7 +106,7 @@ class TestFoxLin:
 
     def test_memory_speed(self, benchmark, fake_data, db):
         db.disable_box('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
-        func = self.itest_insert
+        func = self.test_insert
         benchmark(func, fake_data, db.sessionFactory)
 
     def test_read_speed(self, benchmark, session):
