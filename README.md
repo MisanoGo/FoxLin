@@ -1,8 +1,8 @@
 # **_FoxLin_**
-simple, fast, funny column base dbms on python
+simple, fast, funny column based dbms on python
 
 ### philosophy
-Foxlin developed to create best User experience of DBMS interface for mini projects
+Foxlin developed to create the best User experience of DBMS interface for mini projects
 it is fast because use of numpy array for contain columns data in memory
 and using pydantic for manage data in program
 
