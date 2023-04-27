@@ -1,5 +1,5 @@
 from typing_extensions import Self
-from typing import Generator, Callable
+from typing import Generator, Callable, Dict
 
 from numpy import where, argsort, array, argwhere, arange
 from random import choice
@@ -37,7 +37,12 @@ class FoxQuery(object):
         self.records = self.__get_records
         self.selected_col = set()
 
-    def get_one(self, ID: int):
+    def get_by_id(self, ID: int|str) -> Schema | Dict:
+        _id = self.session._db['ID'].getv(ID)
+        return self.get_one(_id)
+
+    def get_one(self, ID: int) -> Schema | Dict:
+        # here ID mean index of ID in ID column
         return self.session.get_one(ID, columns=self.selected_col, raw=self.raw)
 
     def get_many(self, *ID: int):
@@ -56,6 +61,8 @@ class FoxQuery(object):
     def all(self) -> Generator:
         return self.get_many(*self.records)
         self.reset()
+
+
 
     def select(self,*column: str) -> Self:
         self.selected_col = set(column)
