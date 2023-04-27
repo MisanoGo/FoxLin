@@ -20,7 +20,7 @@ class Schema(BaseModel):
     """
     databaser schema aliaser & also record container
     """
-    ID: IDColumn | int = Column()
+    ID: IDColumn | int = IDColumn()
 
 
     def __getitem__(self, i):
