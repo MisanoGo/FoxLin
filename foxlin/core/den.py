@@ -70,7 +70,7 @@ class Den(object):
         column_list = columns if columns else self._db.columns # set custom or menualy columns
 
         for _id in ID:
-            rec = {c: self._db[c][_id] for c in column_list} # rich record as dict
+            rec = {c: self._db[c]._data[_id] for c in column_list} # rich record as dict
             # check for export data as raw record or initial with Schema
             yield rec if raw else self._schema.construct(**rec)
 
@@ -110,10 +110,11 @@ class Den(object):
         self.rollback()
 
 
-    def discard(self, op: Optional[CRUDOperation] = None):
+    def discard(self, op: Optional[CRUDOperation] = None) -> None|CRUDOperation:
         # remove specified operation or last operation in commit list
         if op : self._commit_list.remove(op)
         else: return self._commit_list.pop()
+        return None
 
     #__slots__ = ('_insert','_commit','_db','_schema','_commiter','_commit_list')
 

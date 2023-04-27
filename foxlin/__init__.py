@@ -1,4 +1,5 @@
-from foxlin.fox import FoxLin, BASIC_BOX
-from foxlin.sophy import Schema, Column
+from foxlin.core.fox import FoxLin
+from foxlin.core.sophy import Schema
+from foxlin.core.column import Column, UniqeColumn
 
-__all__ = ('FoxLin', 'BASIC_BOX', 'Schema','Column')
+__all__ = ('FoxLin', 'Schema', 'Column', 'UniqeColumn')

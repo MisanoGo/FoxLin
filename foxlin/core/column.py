@@ -70,7 +70,8 @@ class BaseColumn:
         self._data.resize(size, refcheck=False)
 
     def __getitem__(self, i):
-        return self.data[i]
+        assert i<self.flag
+        return self._data[i]
 
     def __setitem__(self, k, v):
         self._data[k] = v

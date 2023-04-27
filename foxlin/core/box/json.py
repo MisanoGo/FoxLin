@@ -7,7 +7,7 @@ from foxlin.sophy import (
     Schema,
     DBOperation,
     DBCarrier,
-    
+
     Log,
 
     DB_TYPE,
@@ -86,7 +86,7 @@ class JsonBox(FoxBox):
     def create_database_op(self, obj: CreateJsonDB):
         db = obj.structure()
         self._dump(obj.path, db, mode='xb+')  # mode set for check database dosent exists
-        
+
         log = Log(box_level=self.level,
                   log_level='INFO',
                   message=f'database created at {obj.path}.')

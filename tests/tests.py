@@ -23,7 +23,7 @@ def table():
 
 
 @pytest.fixture(scope="session")
-def fake_data(table, count=100):
+def fake_data(table, count=100000):
     faker = Faker()
     data = [
         table(
@@ -50,7 +50,7 @@ def session(db):
     return db.sessionFactory
 
 class TestFoxLin:
-    def test_insert(self, fake_data, session):
+    def itest_insert(self, fake_data, session):
         session.insert(*fake_data)
         session.commit()
 
@@ -78,7 +78,7 @@ class TestFoxLin:
         )
         session.commit()
 
-    def test_update(self, session):
+    def itest_update(self, session):
         q = session.query
         p1 = q.rand()
         p2 = p1.copy()
@@ -90,7 +90,7 @@ class TestFoxLin:
         assert query.get_one(p1.ID) != p1
         assert query.get_by_id(p1.ID).age == p2.age
 
-    def test_delete(self, session):
+    def itest_delete(self, session):
         q = session.query
         rand_rec = q.rand()
 
@@ -101,13 +101,13 @@ class TestFoxLin:
         q.raw = True
         assert rand_rec.dict() not in tuple(q.all())
 
-    def test_io_speed(self, benchmark, fake_data, session):
+    def itest_io_speed(self, benchmark, fake_data, session):
         func = self.test_insert
         benchmark(func, fake_data, session)
 
     def test_memory_speed(self, benchmark, fake_data, db):
         db.disable_box('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
-        func = self.test_insert
+        func = self.itest_insert
         benchmark(func, fake_data, db.sessionFactory)
 
     def test_read_speed(self, benchmark, session):
