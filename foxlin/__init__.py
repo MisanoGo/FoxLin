@@ -1,4 +1,5 @@
 """
+
 Foxlin is a simple, fast, funny json dbms base on python
 
 usage: simple usage :
@@ -9,7 +10,7 @@ class MyTable(schema): # define your teble schema
     name: str
     username: str
     password: str
-    
+
 db = FoxLin('./db.json', MyTable)
 
 data = [
@@ -30,6 +31,7 @@ r_data = db_session.SELECT().WHERE('name','=','sobhan').get()
 myrecord = r_data[0]
 
 print(myrecord.name, myrecord.username, myrecord.password)
+
 """
 
 
