@@ -1,6 +1,7 @@
+import subprocess
 import os
 
-from config.settings import AUTO_RUNNING_TESTS
+from config.settings import AUTO_RUNNING_TESTS, BASE_DIR
 
 
 class SystemHandler(object):
@@ -13,8 +14,15 @@ class SystemHandler(object):
 
     def check_command_handlers(self):
         if self.auto_running_tests:
-            os.system("pytest")
+            subprocess.Popen(["pytest"])
+            return 1
+        else:
+            print('No automation tool enabled, you can configure it from config.settings')
             return 1
 
+    def make_docs(self):
+        os.chdir(os.path.join(BASE_DIR, 'documents'))
+        subprocess.Popen(["make", "html"], stdout=subprocess.DEVNULL)
+        return 1
 
 system_handler = SystemHandler()
