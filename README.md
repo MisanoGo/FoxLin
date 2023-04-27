@@ -9,15 +9,15 @@ and using pydantic for manage data in program
 also have powerfull process managers.
 
 ### Quick access :
- - docs : [todo]()
+ - [docs](https://GitHub.com/MisanoGo/FoxLin/blob/stable/docs)
  - pypi : [todo]()
- - code : [todo]()
+ - [code](https://GitHub.com/MisanoGo/FoxLin)
 
 
 ### requirements
- - numpy
- - pydantic
- - orjson
+ * numpy
+ * pydantic
+ * orjson
 
 ## installation
 ```console
@@ -49,13 +49,8 @@ with db.session as db_session:
     db_session.insert(*data)
     # auto commit after end of context manager
 
-# OR 
 
-db_session = db.sessionFactory
-db_session.insert(*data)
-db_session.commit()
-
-query = db_session.query
+query = db.query
 record = query.where(query.age > 17, query.name == Ali).order_by('age').first()
 
 print(record.name, record.username, record.password)
@@ -90,7 +85,7 @@ From that day on, Sophy and Lin would often visit the database and other places 
 - [x] benchmarck test
 - [x] add logs to .logs file
 - [x] define logs in operation statment and able to setting by user
-- [ ] generate logs
+- [x] generate logs
 - [x] quering
 
 ##### TODO at 1.1
