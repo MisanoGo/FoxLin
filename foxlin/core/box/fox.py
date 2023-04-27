@@ -1,6 +1,6 @@
 from typing import Callable, Dict, List
 
-from foxlin.sophy import DBOperation, LEVEL
+from foxlin.core.sophy import DBOperation, LEVEL
 
 class FoxBox:
     """

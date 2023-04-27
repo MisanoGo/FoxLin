@@ -1,9 +1,9 @@
-from typing import List, Callable, Union
+from typing import List, Callable
 
 from pydantic import BaseModel as BsMdl
 
 from .column import Column, IDColumn
-from .utils import get_attr
+from foxlin.utils import get_attr
 #from .den import Den
 
 
@@ -23,7 +23,7 @@ class Schema(BaseModel):
     ID: IDColumn | int = IDColumn()
 
 
-    def __getitem__(self, i):
+    def __getitem__(self, i) -> Column:
         return get_attr(self, i)
 
     def __setitem__(self, name, value):

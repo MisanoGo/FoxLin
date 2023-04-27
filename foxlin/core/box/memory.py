@@ -2,8 +2,8 @@ from typing import List
 
 from .fox import FoxBox
 
-from foxlin.query import FoxQuery
-from foxlin.sophy import (
+from foxlin.core.query import FoxQuery
+from foxlin.core.sophy import (
     Schema,
     DBOperation, 
     DBCarrier,

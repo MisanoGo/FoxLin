@@ -1,7 +1,7 @@
 import os
 
 from .fox import FoxBox
-from foxlin.sophy import DBOperation, Log
+from foxlin.core.sophy import DBOperation, Log
 
 class LogBox(FoxBox):
     level: str = 'log'

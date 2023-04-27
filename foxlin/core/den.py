@@ -69,10 +69,12 @@ class Den(object):
         assert ID != None # check for record exists 
         column_list = columns if columns else self._db.columns # set custom or menualy columns
 
-        for _id in ID:
-            rec = {c: self._db[c]._data[_id] for c in column_list} # rich record as dict
-            # check for export data as raw record or initial with Schema
-            yield rec if raw else self._schema.construct(**rec)
+        recs = [{c: self._db[c]._data[_id]
+                for c in column_list}
+                for _id in ID] # rich record as dict
+        # check for export data as raw record or initial with Schema
+        return recs
+            
 
     @_commitRecorder
     def insert(self, *recs: Schema, columns: List[COLUMN]= None) -> DBCreate:
@@ -141,4 +143,4 @@ class DenManager(object):
     def query(self):
         return self.sessionFactory.query
 
-    __slots__ = ('_session', '_sessionFactory')
+    __slots__ = ('_session', '_sessionFactory','_query')

@@ -2,8 +2,8 @@ from typing import List, Dict
 
 import orjson
 
-from foxlin.column import Column, IDColumn, FoxNone
-from foxlin.sophy import (
+from foxlin.core.column import Column, IDColumn, FoxNone
+from foxlin.core.sophy import (
     Schema,
     DBOperation,
     DBCarrier,

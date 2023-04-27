@@ -6,7 +6,7 @@ from random import choice
 
 from .sophy import Schema
 from .column import Column, FoxNone
-from .utils import get_attr
+from foxlin.utils import get_attr
 
 class FoxQuery(object):
     """ 

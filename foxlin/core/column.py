@@ -27,7 +27,7 @@ class BaseColumn:
         data will initial with numpy array
     """
     def __init__(self):
-        self._data = array([],dtype=object)
+        self._data = array([], dtype=object)
         self.flag  = 0
 
 
