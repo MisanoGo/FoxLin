@@ -2,14 +2,16 @@ from typing import  Any
 
 #from .sophy import Schema
 
-def genid(base: int|str):
-    itype = type(base)
-    x = int(base, 16) if itype == str else base
+class genid:
+    def __init__(self, base: int|str):
+        # handle & generate as a hex or int
+        self.t = type(base)
+        self.x = base if self.t is int else int(base, 16)
 
-    while True:
-        x = x+1
-        yield x if itype == int else hex(x)
-
+    def __call__(self):
+        self.x += 1
+        y = self.x if self.t is int else hex(self.x)
+        return y
 
 def migrate(path, new_schema):
     # TODO in 1.1

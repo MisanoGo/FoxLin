@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from numpy import array, log2
+from numpy import array, log2, concatenate
 
 from foxlin.utils import genid
 
@@ -26,17 +26,11 @@ class BaseColumn:
     data: list
         data will initial with numpy array
     """
-    def __init__(self, data = []):
-        self._data = array(data, dtype=object)
-        flag = len(data)
-        if flag == 0 : 
-            # if data list is empty resize array to 8 index
-            self.__resize(8) 
+    def __init__(self):
+        self._data = array([],dtype=object)
+        self.flag  = 0
 
-        # define max record index in array
-        self.flag = len(self._data) if flag else len(data) # max inserted arg
-        self.__grow()
- 
+
     def __grow(self):
         """ auto check to resize array """
         _data = self._data
@@ -46,6 +40,20 @@ class BaseColumn:
         if change:
             new_size = int(2**(log2(_data.size) + change))
             self.__resize(new_size)
+
+    def attach(self, data=[]):
+        xd = array(data, dtype=object)
+        yd = concatenate((self.data, xd))
+
+        self._data = yd
+        # define max record index in array
+
+        if len(self._data) < 1:
+            self.__resize(8)
+        else:
+            self.flag = len(self._data)
+        self.__grow()
+
 
     def append(self, v):
         flag = self.flag
@@ -85,13 +93,17 @@ class RaiColumn(BaseColumn):
     is a sub class of Base Column to develop a state
     to able get value index with order(1)
     """
-    def __init__(self, data: Iterable = []):
+    def __init__(self):
+
+        super(RaiColumn, self).__init__()
+
+    def attach(self, data: Iterable = []):
         self.reli = {
             hash(data[i]) : i
             for i in range(len(data))
         }
 
-        super(RaiColumn, self).__init__(data)
+        super().attach(data)
 
     def getv(self, v):
         return self.reli[hash(v)]
@@ -120,10 +132,17 @@ class RaiColumn(BaseColumn):
  
 
 class UniqeColumn(RaiColumn):
-    def __init__(self, data: Iterable = []):
-        assert list(set(data)) == list(data) # check input data list is uniqe or not
+    def __init__(self):
+        super(UniqeColumn, self).__init__()
 
-        super(UniqeColumn, self).__init__(data)
+    def attach(self, data: Iterable = []):
+        sndata = set(data)
+        s_data = set(self.data)
+
+        assert list(sndata) == list(data) # check input data list is uniqe or not
+        assert s_data | sndata == s_data ^ sndata
+
+        super().attach(data)
 
     def __setitem__(self, k, v):
         assert hash(v) not in self.reli.keys()
@@ -136,13 +155,15 @@ class IDColumn(UniqeColumn):
     implemented for ID column in schema of table
 
     """
-    def __init__(self, data: Iterable = []):
-        super(IDColumn, self).__init__(data)
+    def __init__(self):
+        super(IDColumn, self).__init__()
 
+    def attach(self, data: Iterable = []):
+        super().attach(data)
         self.fid = genid(self._data[self.flag-1])
 
     def plus(self):
-        _id = next(self.fid)
+        _id = self.fid()
         return self.append(_id)
 
 
