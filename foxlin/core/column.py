@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from numpy import array, log2, concatenate
+from numpy import array, log2, concatenate, where
 
 from foxlin.utils import genid
 
@@ -84,9 +84,15 @@ class BaseColumn:
     def __repr__(self):
         return f'{self.__class__.__name__}({str(self.data)})'
 
+    __eq__ = lambda self, o: self.data == o
+    __gt__ = lambda self, o: self.data >  o
+    __lt__ = lambda self, o: self.data <  o
+    __contains__ = lambda self, o: o in self.data
+
     @property
     def data(self):
-        return self._data[:self.flag]
+        data = self._data[:self.flag]
+        return data[where(data != FoxNone)]# filter None objects
 
 class RaiColumn(BaseColumn):
     """

@@ -1,12 +1,111 @@
 from typing_extensions import Self
-from typing import Generator, Callable, Dict
+from typing import (
+    Generator,
+    Callable,
+    Dict,
+    Tuple,
+    Union,
+    Any
+)
 
-from numpy import where, argsort, array, argwhere, arange
+from operator import (
+    eq, gt, lt, contains
+)
+
+from numpy import (
+    array,
+    argsort,
+    argwhere,
+    arange
+)
+
 from random import choice
 
 from .sophy import Schema
-from .column import Column, FoxNone
+from .column import Column
 from foxlin.utils import get_attr
+
+class EQ:
+    op = eq
+    du = '__eq__'
+
+class GT:
+    op = gt
+    du = '__gt__'
+
+class LT:
+    op = lt
+    du = '__lt__'
+
+class IN:
+    op = contains
+    du = '__contains__'
+
+
+
+VAL = Any
+OPR = Union[EQ,GT,LT]
+CON = Tuple[OPR, VAL]
+
+class FoxCon:
+    """
+    FoxCon used for save exp
+
+
+    Parameters
+    ----------
+    name: str
+        column name
+    column : Column
+        used for data filtering
+    """
+    def __init__(self, name: str, column: Column):
+        self.name    : str = name
+        self.column  : Column = column
+        self.uptop   : CON = None
+        self.register: Dict[OPR,VAL] = {}
+
+
+    def __add(self, opr: OPR, val: VAL):
+        self.register[opr] = val
+        self.uptop = (opr, val)
+
+    def __eq__(self, o):
+        self.__add(EQ, o)
+        return self
+
+    def __gt__(self, o):
+        self.__add(GT, o)
+        return self
+
+    def __lt__(self, o):
+        self.__add(LT, o)
+        return self
+
+    def __in__(self, o):
+        self.__add(IN, o)
+        return self
+
+    def filter(self):
+        opr, val = self.uptop # get last exp
+        func = getattr(self.column, opr.du) # example : return Column.__eq__ 
+        con = func(val)
+
+        x = argwhere(con)
+        return x
+
+
+    def validate(self, o):
+        # will use in Query Cache system
+        return any(
+            [ opr.op(o,val) for opr,val in self.register.items() ]
+        )
+
+    def __getitem__(self, i):
+        return self.column.data.__getitem__(i)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.name}:{self.register}'
 
 class FoxQuery(object):
     """ 
@@ -31,7 +130,7 @@ class FoxQuery(object):
 
     @property
     def __get_records(self):
-        return arange(len(self.ID))
+        return arange(self.ID.column.flag)
 
     def reset(self):
         self.records = self.__get_records
@@ -46,10 +145,10 @@ class FoxQuery(object):
         return self.session.get_one(ID, columns=self.selected_col, raw=self.raw)
 
     def get_many(self, *ID: int):
-        return self.session.get_many(*ID,columns=self.selected_col, raw=self.raw)
+        return self.session.get_many(*ID, columns=self.selected_col, raw=self.raw)
 
     def first(self):
-        return self.get_one(self.rcords[0])
+        return self.get_one(self.records[0])
 
     def end(self):
         return self.get_one(self.records[-1])
@@ -68,18 +167,18 @@ class FoxQuery(object):
         self.selected_col = set(column)
         return self
 
-    def where(self, *condition) -> Self:
+    def where(self, *condition: FoxCon) -> Self:
         recset = set(self.records)
         recs = self.__get_records
 
         for con in condition:
-            x = recs[argwhere(con)]
+            x = recs[con.filter()]
             y = x.reshape(len(x))
             recset = recset & set(y)
         self.records = array(list(recset))
         return self
 
-    def order_by(self, column: Column) -> Self:
+    def order_by(self, column: FoxCon) -> Self:
         recs = column[self.records] # get filterd recors column data 
         sorted_recs_index = argsort(recs) # sort them & return index's
         self.records = self.records[sorted_recs_index] # sort ID data by sorted column data args
@@ -131,6 +230,6 @@ class FoxQuery(object):
             # implemented for quick access of column data like : query.<column name>
             _db = self.session._db
             assert name in _db.columns # TODO : set exception # assert if column don't exists
-            column = _db[name].data # get raw data
-            return column[where(column != FoxNone)] # filter None objects
+            column = _db[name] # get column
+            return FoxCon(name,column)
 
