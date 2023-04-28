@@ -37,9 +37,9 @@ class DBDump(DBCarrier, JsonDBOP):
     op_name = 'DUMP'
 
 
-class JsonBox(FoxBox):
+class StorageBox(FoxBox):
     """
-    JsonBox is the subclass of FoxBox object
+    StorageBox is the subclass of FoxBox object
     for manage operation in json file state
     """
     file_type = '.json'

@@ -9,8 +9,8 @@ from .memory import (
     MemBox
 )
 
-from .json import (
-    JsonBox,
+from .storage import (
+    StorageBox,
 
     CreateJsonDB,
     DBLoad,

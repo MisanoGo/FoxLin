@@ -8,7 +8,7 @@ from .box import (
     MemBox,
     LogBox,
 
-    JsonBox,
+    StorageBox,
     CreateJsonDB,
     DBLoad,
     DBDump,
@@ -18,7 +18,7 @@ from .box import (
 )
 
 
-BASIC_BOX = [MemBox(), JsonBox(), LogBox()]
+BASIC_BOX = [MemBox(), StorageBox(), LogBox()]
 
 class FoxLin(BoxManager, DenManager):
     """
@@ -67,7 +67,7 @@ class FoxLin(BoxManager, DenManager):
     def load(self):
         dbdo = DBLoad(
                 callback=self.__set_db,
-                callback_level=JsonBox.level,
+                callback_level= StorageBox.level,
                 path=self.path)
 
         dbdo.structure = self.schema

@@ -2,7 +2,7 @@ from .box import (
     BoxManager,
 
     FoxBox,
-    JsonBox,
+    StorageBox,
     MemBox,
     LogBox,
 
