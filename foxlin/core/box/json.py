@@ -22,7 +22,7 @@ from .fox import FoxBox
 
 class JsonDBOP(DBOperation):
     path: str
-    levels: List[LEVEL] = ['jsonfile', 'log']
+    levels: List[LEVEL] = ['storage', 'log']
     structure: Schema | None = None
 
     # TODO : validate path exists with pydantic validator
@@ -43,7 +43,7 @@ class JsonBox(FoxBox):
     for manage operation in json file state
     """
     file_type = '.json'
-    level: str = 'jsonfile'
+    level: str = 'storage'
 
     def _validate(self, data: dict, schema: Schema) -> bool:
         scl: List[str] = schema.columns  # get user definate Schema column list
@@ -88,7 +88,7 @@ class JsonBox(FoxBox):
     def _dump(self, path: str, db: Schema, mode='wb+'):
         columns = db.columns
         data = {
-            c : list(FoxNone.filter(db[c].data))
+            c : list(db[c].data)
             for c in columns
         }
         with open(path, mode) as dbfile:

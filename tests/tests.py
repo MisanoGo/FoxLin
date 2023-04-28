@@ -100,12 +100,12 @@ class TestFoxLin:
         q.raw = True
         assert rand_rec.dict() not in tuple(q.all())
 
-    def itest_io_speed(self, benchmark, fake_data, session):
+    def test_io_speed(self, benchmark, fake_data, session):
         func = self.test_insert
         benchmark(func, fake_data, session)
 
     def test_memory_speed(self, benchmark, fake_data, db):
-        db.disable_box('jsonfile') # remove filedb manager box : DUMP, LOAD will not work
+        db.disable_box('storage') # remove filedb manager box : DUMP, LOAD will not work
         func = self.test_insert
         benchmark(func, fake_data, db.sessionFactory)
 
