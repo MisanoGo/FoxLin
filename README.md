@@ -28,7 +28,7 @@ $ pip install foxlin
 ```Python
 from foxlin import FoxLin, Schema, Column, UniqeColumn
 
-class MyTable(schema): 
+class MyTable(schema):
     # define your teble schema
     # set your own column type needed, splited for low order and high performance
     name: str = Column()
@@ -51,7 +51,7 @@ with db.session as db_session:
 
 
 query = db.query
-record = query.where(query.age > 17, query.name == Ali).order_by('age').first()
+record = query.where(query.age > 17, query.name == 'Ali').order_by(query.age).first()
 
 print(record.name, record.username, record.password)
 ```
