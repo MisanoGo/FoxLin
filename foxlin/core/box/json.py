@@ -1,8 +1,10 @@
 from typing import List, Dict
 
+import os
 import orjson
+import shutil
 
-from foxlin.core.column import Column, IDColumn, FoxNone
+from foxlin.core.column import Column, FoxNone
 from foxlin.core.sophy import (
     Schema,
     DBOperation,
@@ -50,11 +52,24 @@ class JsonBox(FoxBox):
 
     def _translate(self, data: Dict, db: Schema) -> Schema:
         for _column in db.columns:
-            cdata  = data[_column]
-            column = db[_column]
+            cdata = data[_column]
+            column: Column = db[_column]
 
             column.attach(cdata)
         return db
+
+    def _backup(self, obj: JsonDBOP):
+        path = obj.path
+        backup_path = path + '.backup'
+
+        shutil.move(path, backup_path)
+
+    def _restore(self, obj: JsonDBOP):
+        path = obj.path
+        backup_path = path + '.backup'
+
+        if os.path.exists(backup_path):
+            shutil.move(backup_path, path)
 
     def _load(self, path: str, schema: Schema) -> DB_TYPE:
         with open(path, 'r') as file:
@@ -80,8 +95,14 @@ class JsonBox(FoxBox):
             dbfile.write(orjson.dumps({'db':data}))
 
     def dump_op(self, obj: DBDump):
-        db = obj.db
-        self._dump(obj.path, db)
+        self._backup(obj)
+
+        try :
+            self._dump(obj.path, obj.db)
+        except Exception as ex:
+            self._restore(obj)
+
+            raise ex
 
     def create_database_op(self, obj: CreateJsonDB):
         db = obj.structure()
