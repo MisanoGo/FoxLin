@@ -17,6 +17,11 @@ from .box import (
     CRUDOperation
 )
 
+from foxlin.errors import (
+    DataBaseExistsError,
+    InvalidDatabaseSchema
+)
+
 
 BASIC_BOX = [MemBox(), StorageBox(), LogBox()]
 
@@ -59,9 +64,10 @@ class FoxLin(BoxManager, DenManager):
     def auto_setup(self):
         try:
             self.create_database()
-        except:
+        except DataBaseExistsError:
             pass
         finally:
+            # TODO set Exception for invalid Schema state
             self.load()
 
     def load(self):
@@ -78,7 +84,7 @@ class FoxLin(BoxManager, DenManager):
 
     def create_database(self):
         file_path = self.path
-        assert not os.path.exists(file_path), Exception # TODO: set appropriate Exception
+        if os.path.exists(file_path): raise DataBaseExistsError(file_path)
 
         cjdbo = CreateJsonDB(path=file_path) # cjdbo: create json database operation
         cjdbo.structure = self.schema

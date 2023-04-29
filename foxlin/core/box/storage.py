@@ -5,6 +5,7 @@ import orjson
 import shutil
 
 from foxlin.core.column import Column, FoxNone
+from foxlin.errors import InvalidDatabaseSchema
 from foxlin.core.sophy import (
     Schema,
     DBOperation,
@@ -75,10 +76,9 @@ class StorageBox(FoxBox):
         with open(path, 'r') as file:
             data = orjson.loads(file.read())['db']
             db = schema()
-            if self._validate(data, db):
-                db = self._translate(data, db)
-                return db
-            raise ValueError
+            if not self._validate(data, db): raise InvalidDatabaseSchema
+            db = self._translate(data, db)
+            return db
 
     def load_op(self, obj: DBLoad) -> DBCarrier:
         db = self._load(obj.path, obj.structure)
