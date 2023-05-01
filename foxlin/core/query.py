@@ -22,7 +22,7 @@ from numpy import (
 from random import choice
 
 from .sophy import Schema
-from .column import Column
+from .column import BaseColumn
 from foxlin.utils import get_attr
 
 class EQ:
@@ -59,9 +59,9 @@ class FoxCon:
     column : Column
         used for data filtering
     """
-    def __init__(self, name: str, column: Column):
+    def __init__(self, name: str, column: BaseColumn):
         self.name    : str = name
-        self.column  : Column = column
+        self.column  : BaseColumn = column
         self.uptop   : CON = None
         self.register: Dict[OPR,VAL] = {}
 
