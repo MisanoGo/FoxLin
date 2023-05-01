@@ -17,10 +17,13 @@ from .box import (
 )
 
 from .column import (
-    Column,
+    BaseColumn,
     UniqeColumn,
+    RaiColumn,
     IDColumn,
-    FoxNone
+
+    FoxNone,
+    column
 )
 
 from .den import (
