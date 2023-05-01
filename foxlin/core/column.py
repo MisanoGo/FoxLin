@@ -1,14 +1,9 @@
-from typing import Iterable
+from typing import Iterable, Any
 
-from numpy import array, log2, concatenate, where
+from numpy import array, concatenate, arange, roll
 
 from foxlin.utils import genid
 
-class FoxNone:
-    __repr__ = lambda self: self.__class__.__name__
-    __str__ = __repr__
-
-    filter = lambda data: filter(lambda x: x != FoxNone ,data)
 
 class BaseColumn:
     """
@@ -25,37 +20,25 @@ class BaseColumn:
     ----------
     data: list
         data will initial with numpy array
+    dtype: Any
+        define for type checking & less memory usage
     """
-    def __init__(self):
-        self._data = array([], dtype=object)
-        self.flag  = 0
+    def __init__(self, dtype: Any=object, default=None):
+        self.data = array([], dtype=dtype)
+        self.default = default
+        self.dtype = dtype
 
-
-    def __grow(self):
-        """ auto check to resize array """
-        _data = self._data
-        chunck = self.flag / _data.size * 100 # define data volume by percent
-        change = -1 if chunck < 35 else +1 if chunck > 90 else 0
-
-        if change:
-            new_size = int(2**(log2(_data.size) + change))
-            self.__resize(new_size)
 
     def attach(self, data=[]):
-        xd = array(data, dtype=object)
+        # use for multi data 
+        xd = array(data, dtype=self.dtype)
         yd = concatenate((self.data, xd))
 
-        self._data = yd
-        # define max record index in array
+        self.data = yd
 
-        if len(self._data) < 1:
-            self.__resize(8)
-        else:
-            self.flag = len(self._data)
-        self.__grow()
+    def append(self, v=None):
+        v = v if v else self.default # set default value if v is None
 
-
-    def append(self, v):
         flag = self.flag
         self[flag] = v
         return flag
@@ -64,19 +47,26 @@ class BaseColumn:
         self[i] = v
 
     def pop(self, i):
-        self._data[i] = FoxNone
+        data = self.data
+        size = self.data.size
+
+        # send specified item to end of array
+        data = array(roll(data, size-i)[::-1])
+        data.resize(size-1, refcheck=False) # remove lase item
+        data = array(roll(data, size-i-1)[::-1])# reset array
+        self.data = data
 
     def __resize(self, size):
-        self._data.resize(size, refcheck=False)
+        self.data.resize(size, refcheck=False)
 
     def __getitem__(self, i):
-        assert i<self.flag
-        return self._data[i]
+        return self.data[i]
 
     def __setitem__(self, k, v):
-        self._data[k] = v
-        if k >= self.flag : self.flag += 1
-        self.__grow()
+        if k >= self.flag :
+            self.__resize(self.flag+1)
+
+        self.data[k] = v
 
     def __iter__(self):
         return iter(self.data)
@@ -90,9 +80,9 @@ class BaseColumn:
     __contains__ = lambda self, o: o in self.data
 
     @property
-    def data(self):
-        data = self._data[:self.flag]
-        return data[where(data != FoxNone)]# filter None objects
+    def flag(self):
+        return self.data.size
+
 
 class RaiColumn(BaseColumn):
     """
@@ -100,9 +90,11 @@ class RaiColumn(BaseColumn):
     is a sub class of Base Column to develop a state
     to able get value index with order(1)
     """
-    def __init__(self):
+    def __init__(self, dtype: Any=object, default=None):
+        super(RaiColumn, self).__init__(dtype, default)
+        self.reli = {
 
-        super(RaiColumn, self).__init__()
+        }
 
     def attach(self, data: Iterable = []):
         self.reli = {
@@ -136,17 +128,21 @@ class RaiColumn(BaseColumn):
         i = self.getv(v)
         super().pop(i)
         self.reli.pop(hash(v))
+
+    @property
+    def davat(self):
+        return self._data[list(self.reli.values())]
  
 
 class UniqeColumn(RaiColumn):
-    def __init__(self):
-        super(UniqeColumn, self).__init__()
+    def __init__(self, dtype: Any=object, default=None):
+        super(UniqeColumn, self).__init__(dtype, default)
 
     def attach(self, data: Iterable = []):
         sndata = set(data)
         s_data = set(self.data)
 
-        assert list(sndata) == list(data) # check input data list is uniqe or not
+        assert sorted(sndata) == sorted(data) # check input data list is uniqe or not
         assert s_data | sndata == s_data ^ sndata
 
         super().attach(data)
@@ -167,13 +163,43 @@ class IDColumn(UniqeColumn):
 
     def attach(self, data: Iterable = []):
         super().attach(data)
-        self.fid = genid(self._data[self.flag-1])
+        self.fid = genid(self._flagid)
 
     def plus(self):
         _id = self.fid()
         return self.append(_id)
 
+    def parange(self, length: int):
+        par = arange(self._flagid+1, length)
+        self.attach(par)
 
-class Column(BaseColumn):
-    # Just alias of BaseColumn
-    pass
+    @property
+    def _flagid(self):
+        return self.data[self.flag-1] if self.flag != 0 else 0
+
+
+
+
+
+
+def column(uniqe: bool=False, rai:bool=False, dtype: Any=object, default=None):
+    """
+    Column Factory function
+
+    Parameters
+    ----------
+    uniqe: bool
+
+    """
+    kwargs = {
+        'dtype':dtype,
+        'default':default
+    }
+
+    if uniqe:
+        return UniqeColumn(**kwargs)
+    if rai:
+        return RaiColumn(**kwargs)
+
+    return BaseColumn(**kwargs)
+
