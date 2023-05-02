@@ -42,14 +42,13 @@ class DBUpdate(CRUDOperation):
 
 class DBDelete(CRUDOperation):
     op_name: str = "DELETE"
-    record: List[ID]
-
 
 
 class MemBox(FoxBox):
     level: str = 'memory'
 
     def create_op(self, obj: DBCreate):
+        return self.create_opv1(obj)
         db = obj.db
         columns = obj.create # except ID column
 
@@ -58,6 +57,17 @@ class MemBox(FoxBox):
             tuple(map(lambda col: db[col].__setitem__(flag, record[col]), columns))
 
         tuple(map(insert, obj.record))
+
+    def create_opv1(self, obj: DBCreate):
+        db = obj.db
+        columns = obj.create
+
+        for col in columns:
+            cold = [r[col] for r in obj.record]
+            db[col].attach(cold)
+        
+        length = db['ID'].flag + len(cold) 
+        db['ID'].parange(length)
 
 
     def read_op(self, obj: DBRead):
@@ -77,8 +87,8 @@ class MemBox(FoxBox):
             list(map(lambda col: obj.db[col].update(_id, record[col]), columns))
 
     def delete_op(self, obj: DBDelete):
-        for _id in obj.record:
-            _id = obj.db.ID.getv(_id)
+        for rec in obj.record:
+            _id = obj.db.ID.getv(rec.ID)
             list(map(lambda c:obj.db[c].pop(_id), obj.db.columns))
 
     __slots__ = ('_create_op','_update_op','_delete_op','_level')
