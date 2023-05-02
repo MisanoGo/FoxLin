@@ -4,7 +4,7 @@ import os
 import orjson
 import shutil
 
-from foxlin.core.column import Column, FoxNone
+from foxlin.core.column import BaseColumn, FoxNone
 from foxlin.errors import InvalidDatabaseSchema
 from foxlin.core.sophy import (
     Schema,
@@ -88,7 +88,7 @@ class StorageBox(FoxBox):
     def _dump(self, path: str, db: Schema, mode='wb+'):
         columns = db.columns
         data = {
-            c : list(db[c].data)
+            c : db[c].data.tolist()
             for c in columns
         }
         with open(path, mode) as dbfile:
