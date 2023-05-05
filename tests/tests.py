@@ -1,11 +1,10 @@
-from cProfile import run
 import pytest
 import random
 import os
 
 from faker import Faker
 
-from foxlin import FoxLin, Schema, Column
+from foxlin import FoxLin, Schema, column
 
 from config.settings import BASE_DIR
 
@@ -13,11 +12,11 @@ from config.settings import BASE_DIR
 @pytest.fixture(scope="session")
 def table():
     class Person(Schema):
-        name: str = Column()
-        family: str = Column()
-        address: str = Column()
-        bio: str = Column()
-        age: int = Column()
+        name: str = column(dtype=str)
+        family: str = column(dtype=str)
+        address: str = column(dtype=str)
+        bio: str = column(dtype=str)
+        age: int = column(dtype=int)
     return Person
 
 
@@ -29,7 +28,7 @@ def fake_data(table, count=1000):
             name=faker.name(),
             family=faker.name(),
             address=faker.address(),
-            bio=faker.text(),
+            bio=faker.color(),
             age=random.randint(10, 80)
         ) for _ in range(count)
     ]
@@ -53,8 +52,6 @@ class TestFoxLin:
         session.insert(*fake_data)
         session.commit()
 
-        #q = session.query
-        #assert list(q.all()) == fake_data
 
     def itest_read(self, session):
         q = session.query
@@ -84,7 +81,7 @@ class TestFoxLin:
         p2.age = 19
         session.update(p2, columns=['age'])
         session.commit()
-        
+
         query = session.query
         assert query.get_one(p1.ID) != p1
         assert query.get_by_id(p1.ID).age == p2.age
@@ -93,12 +90,12 @@ class TestFoxLin:
         q = session.query
         rand_rec = q.rand()
 
-        session.delete(rand_rec.ID)
+        session.delete(rand_rec)
         session.commit()
 
         q = session.query
-        q.raw = True
-        assert rand_rec.dict() not in tuple(q.all())
+        #q.raw = True
+        assert rand_rec not in tuple(q.all())
 
     def test_io_speed(self, benchmark, fake_data, session):
         func = self.test_insert
@@ -112,5 +109,12 @@ class TestFoxLin:
     def test_read_speed(self, benchmark, session):
         f = lambda : list(session.query.all())
         benchmark(f)
+
+    def test_raw_read_speed(self, benchmark, db):
+        query = db.query
+        query.raw = True
+        f = lambda query : list(query.all())
+        benchmark(f, query)
+
 
 
