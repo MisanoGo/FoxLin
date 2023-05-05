@@ -4,7 +4,7 @@ import os
 import orjson
 import shutil
 
-from foxlin.core.column import BaseColumn, FoxNone
+from foxlin.core.column import BaseColumn
 from foxlin.errors import InvalidDatabaseSchema
 from foxlin.core.sophy import (
     Schema,
@@ -54,7 +54,7 @@ class StorageBox(FoxBox):
     def _translate(self, data: Dict, db: Schema) -> Schema:
         for _column in db.columns:
             cdata = data[_column]
-            column: Column = db[_column]
+            column: BaseColumn = db[_column]
 
             column.attach(cdata)
         return db

@@ -22,7 +22,6 @@ from .column import (
     RaiColumn,
     IDColumn,
 
-    FoxNone,
     column
 )
 
