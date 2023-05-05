@@ -77,6 +77,9 @@ record = query.where(query.age > 17, query.name == 'Ali').order_by(query.age).fi
 print(record.name, record.username, record.password)
 ```
 
+### Note
+ - every crud operation on db has O(record_count * column_count) order
+
 ## FoxLin Story
 
 Sophy was a curious girl, always looking to learn and explore new things. One day, she found herself surrounded by a dense forest, enchanted by the beauty and mystery it held.
@@ -98,6 +101,7 @@ From that day on, Sophy and Lin would often visit the database and other places 
 **my experience from this project**
  * in operations with high order, when have many static if,else(no change in all of program)
  it's better to split their by classes and use factory clasess for select own usefull class, etc : columns.py:column
+
 
 ## TODO
 
