@@ -4,6 +4,15 @@ from numpy import array, concatenate, arange, roll
 
 from foxlin.utils import genid
 
+# ###
+# this codes will be recode by zig and deleting the numpy
+#
+#
+#
+#
+#
+# ###
+
 
 class BaseColumn:
     """
@@ -176,8 +185,6 @@ class IDColumn(UniqeColumn):
     @property
     def _flagid(self):
         return self.data[self.flag-1] if self.flag != 0 else 0
-
-
 
 
 

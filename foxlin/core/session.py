@@ -1,18 +1,19 @@
-from typing import List, Dict, Callable, Optional, Generator
+from typing import List, Dict, Callable, Optional, Generator, Any
 from contextlib import contextmanager
 import functools
+import time
+
 
 from .query import FoxQuery
 
-from .sophy import (
+from .database import (
     Schema,
     DBCarrier,
-    DB_TYPE,
-    COLUMN
-
+    
+    DB_TYPE,COLUMN
 )
 
-from .box import (
+from .operation import (
     CRUDOperation,
     DBCreate,
     DBRead,
@@ -20,8 +21,12 @@ from .box import (
     DBDelete
 )
 
+from .utils import (
+    generate_random_name
+)
 
-class Den(object):
+
+class Session(object):
     """
     Den is session model for FoxLin DB manager 
     here Den records operations on database and over then commited,
@@ -31,7 +36,7 @@ class Den(object):
 
     """
     def __init__(self,
-                 db: DBCarrier,
+                 db: DB_TYPE,
                  schema: Schema,
                  commiter: Callable
                  ):
@@ -118,27 +123,65 @@ class Den(object):
 
     #__slots__ = ('_insert','_commit','_db','_schema','_commiter','_commit_list')
 
+class SessionManager:
+    """Manages sessions with a pool and expiration handling."""
 
-class DenManager(object):
+    def __init__(self, db: Any, schema: Any, commiter: Any):
+        self._db = db
+        self.schema = schema
+        self._commiter = commiter
+        self._session_pool: Dict[str, Dict[str, Any]] = {}  # Session pool
+
+    def establish_session(self, privileges: set, expire_in: int = 3600) -> Session:
+        """
+        Create and store a new session with a unique name, privileges, and expiration time.
+        """
+        session_name = generate_random_name()
+        session_instance = {
+            'session': Session(self._db, self.schema, self._commiter),
+            'privileges': privileges,
+            'expires_at': time.time() + expire_in
+        }
+        self._session_pool[session_name] = session_instance
+        
+        return session_instance['session']
+
+    def get_session(self, session_name: str) -> Optional[Session]:
+        """Retrieve a session by its name."""
+        session_info = self._session_pool.get(session_name)
+        if session_info and session_info['expires_at'] > time.time():
+            return session_info['session']
+        else:
+            # Remove expired session
+            self._session_pool.pop(session_name, None)
+            return None
 
     @property
-    def sessionFactory(self):
-        s = Den(
-                self._db,
-                self.schema,
-                self._commiter)
-        return s
+    def sessionFactory(self) -> Session:
+        """Creates and returns a new session instance."""
+        return self.establish_session(privileges=set())  # Create a session with default privileges
 
-    @property
     @contextmanager
-    def session(self):
-        s = self.sessionFactory
-        yield s
-        s.commit()
-        del s
+    def session(self, session_name: Optional[str] = None, privileges: set = None):
+        """
+        Context manager to create and handle a session.
+        If session_name is provided, attempt to retrieve that session.
+        If not, create a new session with optional privileges.  
+        """
+        if session_name:
+            # Try to retrieve an existing session by name
+            session_instance = self.get_session(session_name)
+            if session_instance is None:
+                raise ValueError(f"Session {session_name} does not exist or has expired.")
+        else:
+            # Establish a new session with specified privileges or an empty set
+            session_instance = self.establish_session(privileges or set())
+        try:
+            yield session_instance  # Yield the session instance
+        finally:
+            # Commit changes when exiting context
+            session_instance.commit()
+            # Optionally remove the session from the pool after use
+            self._session_pool.pop(session_name, None)
 
-    @property
-    def query(self):
-        return self.sessionFactory.query
-
-    __slots__ = ('_session', '_sessionFactory','_query')
+    __slots__ = ('_session_pool', '_db', 'schema', '_commiter')

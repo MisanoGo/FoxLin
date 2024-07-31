@@ -5,38 +5,26 @@ import orjson
 import shutil
 
 from foxlin.core.column import BaseColumn
-from foxlin.errors import InvalidDatabaseSchema
-from foxlin.core.sophy import (
+from foxlin.core.database import (
     Schema,
-    DBOperation,
     DBCarrier,
-
-    Log,
-
     DB_TYPE,
     LEVEL
 )
 
-from .fox import FoxBox
+from foxlin.core.operation import (
+    Log,
+    JsonDBOP,
+    DBDump,
+    DBLoad,
+    CreateJsonDB,
+    
+    STORAGE
+)
 
+from .base import FoxBox
 
-
-class JsonDBOP(DBOperation):
-    path: str
-    levels: List[LEVEL] = ['storage', 'log']
-    structure: Schema | None = None
-
-    # TODO : validate path exists with pydantic validator
-
-class CreateJsonDB(JsonDBOP):
-    op_name: str = "create_database"
-
-class DBLoad(DBCarrier, JsonDBOP):
-    op_name = 'LOAD'
-
-class DBDump(DBCarrier, JsonDBOP):
-    op_name = 'DUMP'
-
+from foxlin.errors import InvalidDatabaseSchema
 
 class StorageBox(FoxBox):
     """
@@ -44,7 +32,7 @@ class StorageBox(FoxBox):
     for manage operation in json file state
     """
     file_type = '.json'
-    level: str = 'storage'
+    level: LEVEL = STORAGE
 
     def _validate(self, data: dict, schema: Schema) -> bool:
         scl: List[str] = schema.columns  # get user definate Schema column list
@@ -86,6 +74,7 @@ class StorageBox(FoxBox):
         return obj
 
     def _dump(self, path: str, db: Schema, mode='wb+'):
+        
         columns = db.columns
         data = {
             c : db[c].data.tolist()
@@ -109,7 +98,6 @@ class StorageBox(FoxBox):
         self._dump(obj.path, db, mode='xb+')  # mode set for check database dosent exists
 
         log = Log(box_level=self.level,
-                  log_level='INFO',
+                  log_level='IN6465FO',
                   message=f'database created at {obj.path}.')
         obj.logs.append(log)
-

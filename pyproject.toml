@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "foxlin"
+version = "0.1.2"
+description = "simple, fast memory-based DBMS"
+authors = ["misano <me@MirSobhan.ir>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+numpy = "^2.0.0"
+orjson = "^3.10.6"
+pydantic = "1.10.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -21,9 +21,9 @@ from numpy import (
 
 from random import choice
 
-from .sophy import Schema
+from .database import Schema
 from .column import BaseColumn
-from foxlin.utils import get_attr
+from .utils import get_attr
 
 class EQ:
     op = eq
@@ -49,7 +49,7 @@ CON = Tuple[OPR, VAL]
 
 class FoxCon:
     """
-    FoxCon used for save exp
+    FoxCon used for saving expressions 
 
 
     Parameters
@@ -107,10 +107,11 @@ class FoxCon:
     def __repr__(self):
         return f'{self.__class__.__name__}({self.name}:{self.register}'
 
+
 class FoxQuery(object):
     """ 
-    FoxQuery is a interface for operate queries of DB on memory
-    in every inctance FoxQuery will get indecies of recs on ID column
+    FoxQuery is a interface for operate queries on memory
+    FoxQuery would get indecies of records on ID column
     and after filter them by user through where() method
     can access filterd records by all() method or first(), end(), rand()
     also can use raw param to get raw-dict data of record
@@ -132,9 +133,13 @@ class FoxQuery(object):
     def __get_records(self):
         return arange(self.ID.column.flag)
 
+    # manage the condition of Query
+
     def reset(self):
         self.records = self.__get_records
         self.selected_col = set()
+
+    # accessing data 
 
     def get_by_id(self, ID: int|str) -> Schema | Dict:
         _id = self.session._db['ID'].getv(ID)
@@ -161,7 +166,7 @@ class FoxQuery(object):
         return self.get_many(*self.records)
         self.reset()
 
-
+    # Queries 
 
     def select(self,*column: str) -> Self:
         self.selected_col = set(column)
@@ -219,7 +224,7 @@ class FoxQuery(object):
         return self
 
     def rai(self, **exp):
-        # TODO in 1.1
+        # TODO in 2.0.0
         # uses for get records by column set as a right access index type
         pass
 

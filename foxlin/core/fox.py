@@ -1,19 +1,21 @@
 import os
 from typing import List
 
-from .sophy import Schema 
-from .den import DenManager
+from .database import Schema 
+from .session import SessionManager
 from .box import (
     FoxBox,
     MemBox,
     LogBox,
 
     StorageBox,
-    CreateJsonDB,
+    BoxManager,
+)
+
+from .operation import (
+    CreateJsonDB,   
     DBLoad,
     DBDump,
-
-    BoxManager,
     CRUDOperation
 )
 
@@ -23,9 +25,9 @@ from foxlin.errors import (
 )
 
 
-BASIC_BOX = [MemBox(), StorageBox(), LogBox()]
+BASIS_BOX = [MemBox(), StorageBox(), LogBox()]
 
-class FoxLin(BoxManager, DenManager):
+class FoxLin(BoxManager, SessionManager):
     """
     simple, fast, funny python column based dbms
 
@@ -49,7 +51,7 @@ class FoxLin(BoxManager, DenManager):
     def __init__(self,
                  path: str = None,
                  schema: Schema = Schema,
-                 box: List[FoxBox] = BASIC_BOX,
+                 box: List[FoxBox] = BASIS_BOX,
                  auto_setup: bool = True,
                  auto_enable: bool = True
                  ):

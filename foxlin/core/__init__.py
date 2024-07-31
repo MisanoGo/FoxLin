@@ -5,15 +5,18 @@ from .box import (
     StorageBox,
     MemBox,
     LogBox,
+)
 
+from .operation import (
+    DBOperation,
     CRUDOperation,
     DBCreate,
     DBRead,
     DBUpdate,
     DBDelete,
-
-    DBLoad,
-    DBDump
+    
+    DBDump,
+    DBLoad
 )
 
 from .column import (
@@ -25,23 +28,16 @@ from .column import (
     column
 )
 
-from .den import (
-    Den,
-    DenManager
+from .session import (
+    Session,
+    SessionManager
 )
 
 from .query import FoxQuery
 
-from .sophy import (
+from .database import (
     Schema,
     DBCarrier,
-
-    ID,
-    COLUMN,
-    LEVEL,
-
-    DBOperation,
-    Log
 )
 
 from .fox import FoxLin
